@@ -21,7 +21,7 @@ setup(
   author = 'Drew DeVault',
   author_email = 'sir@cmpwn.com',
   url = 'https://git.sr.ht/~sircmpwn/lists.sr.ht',
-  install_requires = ['srht', 'flask-login'],
+  install_requires = ['srht', 'flask-login', 'aiosmtpd'],
   license = 'AGPL-3.0',
   package_data={
       'listssrht': [
@@ -29,4 +29,7 @@ setup(
           'static/*'
       ]
   },
+  scripts = [
+      'lists-srht-lmtp'
+  ],
 )

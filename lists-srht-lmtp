@@ -1,0 +1,67 @@
+#!/usr/bin/env python3
+from aiosmtpd.lmtp import LMTP
+from srht.config import load_config, cfg
+import asyncio
+import asyncpg
+
+load_config("lists")
+
+loop = asyncio.new_event_loop()
+
+class MailHandler:
+    def __init__(self, pg):
+        self.pg = pg
+
+    async def initialize(self):
+        self.fetch_user = await self.pg.prepare(
+                '''SELECT "id" FROM "user" WHERE username = $1''')
+        self.fetch_list = await self.pg.prepare(
+                    '''SELECT "id" FROM "list"
+                       WHERE "owner_id" = $1 AND "name" = $2''')
+        print("Prepared statements")
+
+    async def lookup_destination(self, address):
+        """Looks up the list this message is addressed to and returns its ID."""
+        # Note: we assume postfix took care of the domain
+        address = address[:address.rfind("@")]
+        if address.startswith("~"):
+            # TODO: user groups
+            if not "/" in address:
+                return None
+            owner, list_name = address.split("/")
+            owner_id = await self.fetch_user.fetchval(owner[1:])
+            if not owner_id:
+                return None
+            list_id = await self.fetch_list.fetchval(owner_id, list_name)
+            return list_id
+        else:
+            # TODO: Attempt fallback method (e.g. users.x.y@)
+            return None
+
+    async def handle_RCPT(self, server, session,
+            envelope, address, rcpt_options):
+        print("RCPT {}".format(address))
+        envelope.rcpt_tos.append(address)
+        return "250 OK"
+
+    async def handle_DATA(self, server, session, envelope):
+        address = envelope.rcpt_tos[0]
+        dest = self.lookup_destination(address)
+        if dest is None:
+            return "550 The mailing list you requested does not exist."
+        print(envelope.content.decode(errors='replace'))
+        return "250 Message accepted for delivery"
+
+async def create_server():
+    pg = await asyncpg.connect(dsn=cfg("sr.ht", "connection-string"))
+    handler = MailHandler(pg)
+    await handler.initialize()
+    await loop.create_unix_server(
+            lambda: LMTP(handler, enable_SMTPUTF8=True),
+            path=cfg("lists", "sock"))
+    # TODO: chmod that unix socket
+
+print("Starting LTMP server")
+loop.run_until_complete(create_server())
+loop.run_forever()
+loop.close()
