@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
 from aiosmtpd.lmtp import LMTP
+from fnmatch import fnmatch
+from grp import getgrnam
 from srht.config import load_config, cfg
 import asyncio
 import asyncpg
+import email
+import os
 
 load_config("lists")
 
@@ -13,11 +17,15 @@ class MailHandler:
         self.pg = pg
 
     async def initialize(self):
+        self.permit_mimetypes = cfg("lists", "permit-mimetypes").split(',')
+        self.reject_mimetypes = cfg("lists", "reject-mimetypes").split(',')
+        self.reject_url = cfg("lists", "reject-url")
         self.fetch_user = await self.pg.prepare(
-                '''SELECT "id" FROM "user" WHERE username = $1''')
+                '''SELECT "id" FROM "user"
+                   WHERE username = $1''')
         self.fetch_list = await self.pg.prepare(
-                    '''SELECT "id" FROM "list"
-                       WHERE "owner_id" = $1 AND "name" = $2''')
+                '''SELECT "id" FROM "list"
+                   WHERE "owner_id" = $1 AND "name" = $2''')
 
     async def lookup_destination(self, address):
         """Looks up the list this message is addressed to and returns its ID."""
@@ -37,6 +45,25 @@ class MailHandler:
             # TODO: Attempt fallback method (e.g. users.x.y@)
             return None
 
+    def validate(self, mail):
+        for part in mail.walk():
+            content_type = part.get_content_type()
+            if fnmatch(content_type, "multipart/*"):
+                continue
+            permit = False
+            for whitelist in self.permit_mimetypes:
+                if fnmatch(content_type, whitelist):
+                    permit = True
+                    break
+            if not permit:
+                return "Content-Type {} is not in the whitelist.".format(
+                        content_type)
+            for blacklist in self.reject_mimetypes:
+                if fnmatch(content_type, blacklist):
+                    return "Content-Type {} is blacklisted.".format(
+                            content_type)
+        return None
+
     async def handle_RCPT(self, server, session,
             envelope, address, rcpt_options):
         print("RCPT {}".format(address))
@@ -48,17 +75,26 @@ class MailHandler:
         dest = self.lookup_destination(address)
         if dest is None:
             return "550 The mailing list you requested does not exist."
-        print(envelope.content.decode(errors='replace'))
+        mail = email.message_from_bytes(envelope.content)
+        err = self.validate(mail)
+        if err is not None:
+            return "500 Rejected. {} See {} for help.".format(
+                err, self.reject_url)
+        print("Message accepted")
+        # TODO: Dispatch to celery
         return "250 Message accepted for delivery"
 
 async def create_server():
+    sock_gid = getgrnam(cfg("lists", "sock-group")).gr_gid
     pg = await asyncpg.connect(dsn=cfg("sr.ht", "connection-string"))
     handler = MailHandler(pg)
     await handler.initialize()
+    sock_path = cfg("lists", "sock")
     await loop.create_unix_server(
             lambda: LMTP(handler, enable_SMTPUTF8=True),
-            path=cfg("lists", "sock"))
-    # TODO: chmod that unix socket
+            path=sock_path)
+    os.chmod(sock_path, 0o775)
+    os.chown(sock_path, os.getuid(), sock_gid)
 
 print("Starting LTMP server")
 loop.run_until_complete(create_server())
