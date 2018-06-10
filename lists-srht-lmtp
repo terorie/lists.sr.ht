@@ -18,7 +18,6 @@ class MailHandler:
         self.fetch_list = await self.pg.prepare(
                     '''SELECT "id" FROM "list"
                        WHERE "owner_id" = $1 AND "name" = $2''')
-        print("Prepared statements")
 
     async def lookup_destination(self, address):
         """Looks up the list this message is addressed to and returns its ID."""
