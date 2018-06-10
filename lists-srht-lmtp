@@ -46,6 +46,10 @@ class MailHandler:
             return None
 
     def validate(self, mail):
+        required_headers = ["To", "From", "Subject"]
+        for header in required_headers:
+            if not mail.get(header):
+                return "The {} header is required.".format(header)
         for part in mail.walk():
             content_type = part.get_content_type()
             if fnmatch(content_type, "multipart/*"):
@@ -80,7 +84,7 @@ class MailHandler:
         if err is not None:
             return "500 Rejected. {} See {} for help.".format(
                 err, self.reject_url)
-        print("Message accepted")
+        print("Message accepted: {}".format(mail.get("Subject")))
         # TODO: Dispatch to celery
         return "250 Message accepted for delivery"
 
