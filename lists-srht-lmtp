@@ -7,6 +7,8 @@ import asyncio
 import asyncpg
 import email
 import os
+import signal
+import sys
 
 load_config("lists")
 
@@ -99,6 +101,12 @@ async def create_server():
             path=sock_path)
     os.chmod(sock_path, 0o775)
     os.chown(sock_path, os.getuid(), sock_gid)
+
+def sigint_handler():
+    print("Exiting due to SIGINT")
+    sys.exit(0)
+
+loop.add_signal_handler(signal.SIGINT, sigint_handler)
 
 print("Starting LTMP server")
 loop.run_until_complete(create_server())
