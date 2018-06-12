@@ -21,7 +21,7 @@ login_manager.init_app(app)
 
 @login_manager.user_loader
 def load_user(username):
-    return User.query.filter(User.username == username).first()
+    return User.query.filter(User.username == username).one_or_none()
 
 login_manager.anonymous_user = lambda: None
 
@@ -47,7 +47,6 @@ meta_client_id = cfg("meta.sr.ht", "oauth-client-id")
 def inject():
     return {
         "oauth_url": oauth_url(request.full_path),
-        "current_user": (
-            User.query.filter(User.id == current_user.id).first()
-        ) if current_user else None,
+        "current_user": (User.query
+            .filter(User.id == current_user.id).one_or_none()),
     }
