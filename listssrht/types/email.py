@@ -9,7 +9,7 @@ class Email(Base):
     subject = sa.Column(sa.Unicode(512), nullable=False)
     # This will be generated if not present
     message_id = sa.Column(sa.Unicode(512), nullable=False)
-    headers = sa.Column(sa.Unicode, nullable=False)
+    headers = sa.Column(sa.JSON, nullable=False)
     envelope = sa.Column(sa.Unicode, nullable=False)
     is_patch = sa.Column(sa.Boolean, nullable=False)
     """true if email is via git format-patch"""
@@ -20,13 +20,11 @@ class Email(Base):
     list = sa.orm.relationship('List', backref=sa.orm.backref('messages'))
 
     parent_id = sa.Column(sa.Integer, sa.ForeignKey('email.id'))
-    parent = sa.orm.relationship('Email', backref=sa.orm.backref('replies'))
+    parent = sa.orm.relationship('Email',
+            backref=sa.orm.backref('replies', remote_side=[id]))
 
-    from_id = sa.Column(sa.Integer, sa.ForeignKey('user.id'))
-    from = sa.orm.relationship('User', backref=sa.orm.backref('sent_messages'))
-
-    to_id = sa.Column(sa.Integer, sa.ForeignKey('user.id'))
-    to = sa.orm.relationship('User', backref=sa.orm.backref('received_messages'))
+    sender_id = sa.Column(sa.Integer, sa.ForeignKey('user.id'))
+    sender = sa.orm.relationship('User', backref=sa.orm.backref('sent_messages'))
 
     # TODO: Enumerate CC's and create a relationship there
 

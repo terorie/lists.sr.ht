@@ -12,6 +12,8 @@ import sys
 
 load_config("lists")
 
+from listssrht.process import dispatch_message
+
 loop = asyncio.new_event_loop()
 
 class MailHandler:
@@ -78,16 +80,18 @@ class MailHandler:
 
     async def handle_DATA(self, server, session, envelope):
         address = envelope.rcpt_tos[0]
-        dest = self.lookup_destination(address)
+        dest = await self.lookup_destination(address)
         if dest is None:
+            print("Rejected, mailing list not found")
             return "550 The mailing list you requested does not exist."
         mail = email.message_from_bytes(envelope.content)
         err = self.validate(mail)
         if err is not None:
+            print("Rejected due to validation errors")
             return "500 Rejected. {} See {} for help.".format(
                 err, self.reject_url)
         print("Message accepted: {}".format(mail.get("Subject")))
-        # TODO: Dispatch to celery
+        dispatch_message.delay(dest, str(mail))
         return "250 Message accepted for delivery"
 
 async def create_server():
