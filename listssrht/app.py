@@ -1,7 +1,7 @@
 from flask import render_template, request
 from flask_login import LoginManager, current_user
 from jinja2 import Markup
-from datetime import datetime
+from datetime import datetime, timedelta
 import locale
 import urllib
 
@@ -46,7 +46,9 @@ meta_client_id = cfg("meta.sr.ht", "oauth-client-id")
 @app.context_processor
 def inject():
     return {
+        "test": datetime.utcnow() + timedelta(minutes=-5),
         "oauth_url": oauth_url(request.full_path),
         "current_user": (User.query
-            .filter(User.id == current_user.id).one_or_none()),
+                .filter(User.id == current_user.id).one_or_none()
+            if current_user else None),
     }
