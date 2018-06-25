@@ -1,0 +1,79 @@
+{% extends "lists.html" %}
+{% block content %}
+<div class="container">
+  <div class="row">
+    <div class="col-md-4">
+      <h2>
+        <a
+          href="/{{ owner.canonical_name() }}"
+        >{{ owner.canonical_name() }}</a>/{{ ml.name }}
+      </h2>
+      <p>
+        This is a mailing list for talkin about stuff. Yadda yadda, user can
+        put whatever they want here. Rules for posting, links to the project,
+        etc.
+      </p>
+      <p>
+        <a href="/create" class="btn btn-primary btn-block">
+          New post
+          <i class="fa fa-caret-right"></i>
+        </a>
+        <a href="/subscriptions" class="btn btn-default btn-block">
+          Browse patches
+          <i class="fa fa-caret-right"></i>
+        </a>
+        <a href="/subscriptions" class="btn btn-default btn-block">
+          Subscribe
+          <i class="fa fa-caret-right"></i>
+        </a>
+      </p>
+    </div>
+    <div class="col-md-8">
+      <form>
+        <input
+          name="search"
+          type="text"
+          placeholder="Search"
+          class="form-control"
+          value="{{ search if search else "" }}" />
+      </form>
+      <div class="event-list">
+        {% for i in range(1, 20) %}
+        <div class="event archive-entry">
+          <small class="text-muted pull-right">
+            {% if i % 2 == 0 %}
+            <span>
+              <i class="text-success fa fa-check"></i>
+              <i class="text-success fa fa-check"></i>
+              <i class="text-danger fa fa-times"></i>
+            </span>
+            {% endif %}
+            <span><i class="fa fa-reply"></i> 5</span>
+            <span><i class="fa fa-user"></i> 3</span>
+            <span>
+              <i class="fa fa-clock-o"></i> {{ test | date }}
+            </span>
+          </small>
+          <h4>
+            {% if i % 2 == 0 %}
+            <i class="fa fa-code-fork"></i>
+            <a href="#">
+              WIP: Atomic layout updates
+            </a>
+            <small class="text-muted" style="margin: 0;">[v2]</small>
+            {% else %}
+            <a href="#">
+              API stability guarantee
+            </a>
+            {% endif %}
+          </h4>
+        </div>
+        {% endfor %}
+      </div>
+      <a href="#" class="btn btn-default pull-right">
+        View more <i class="fa fa-caret-right"></i></a>
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -2,26 +2,39 @@
 {% block content %}
 <div class="container">
   <div class="row">
-    <div class="col-md-5">
-      <h3>Patch queue</h3>
+    <div class="col-md-4">
       <p>
+        Welcome back, {{ current_user.username }}! This is the
+        {{cfg("sr.ht", "site-name")}} mailing list service. Documentation
+        for its use is
+        <a href="https://man.sr.ht/lists.sr.ht">available here</a>.
+      </p>
+      <p>
+        <a href="/create" class="btn btn-primary btn-block">
+          Create new list
+          <i class="fa fa-caret-right"></i>
+        </a>
+        <a href="/subscriptions" class="btn btn-default btn-block">
+          Manage your subscriptions
+          <i class="fa fa-caret-right"></i>
+        </a>
+        <a href="/lists" class="btn btn-default btn-block">
+          Manage your lists
+          <i class="fa fa-caret-right"></i>
+        </a>
+      </p>
+      <h3>Patch queue</h3>
+      <div class="event-list">
         {% for i in range(1, 8) %}
-        <div class="patch-summary">
+        <div class="event">
           <h4>
-            [v2]
             <a href="#">
               WIP: Atomic layout updates
             </a>
-            <small class="pull-right">
-              <span class="text-muted">{{ test | date }}</span>
+            <small class="text-muted" style="margin-left: 0">
+              [v2]
             </small>
           </h4>
-          <p>
-            <span class="text-success">+775</span>,
-            <span class="text-danger">-344</span>
-            from <a href="#">Ryan Dwyer</a>
-            to <a href="#">~swaywm/sway</a>
-          </p>
           <p>
             <i class="text-success fa fa-check"></i>
             review <strong class="text-success">+2</strong>
@@ -34,42 +47,45 @@
           </p>
         </div>
         {% endfor %}
-      </p>
-      <a href="#" class="btn btn-default btn-block">
-        View more <i class="fa fa-caret-right"></i></a>
-      </a>
-    </div>
-    <div class="col-md-7">
-      <h3>Recent activity</h3>
-      {% for i in range(1, 10) %}
-      <div class="email-summary">
-        <h4>
-          <a href="#">
-            RE: API stability guarantee
-          </a>
-          <small class="text-muted pull-right">{{ test | date }}</small>
-        </h4>
-        <p>
-          From <a href="#">Simon Ser</a>
-          to <a href="#">~swaywm/wlroots</a>
-        </p>
-        <blockquote>
-          <blockquote>
-            We might need to mark backend_autocreate as unstable.
-          </blockquote>
-          <p>
-          You probably mean "all functions that create a backend".
-          </p>
-          <blockquote>
-            I'm not thrilled with the renderer create function in any case, it
-            might be worth reconsidering how that works.
-          </blockquote>
-          <p>
-          I was thinking of replacing that with a struct.
-          </p>
-        </blockquote>
+        <a href="/patches" class="btn btn-default pull-right">
+          View more
+          <i class="fa fa-caret-right"></i>
+        </a>
       </div>
-      {% endfor %}
+    </div>
+    <div class="col-md-8">
+      <h3>Recent activity</h3>
+      <div class="event-list">
+        {% for i in range(1, 10) %}
+        <div class="event">
+          <h4>
+            <a href="#">
+              RE: API stability guarantee
+            </a>
+            <small class="text-muted pull-right">{{ test | date }}</small>
+          </h4>
+          <p>
+            From <a href="#">Simon Ser</a>
+            to <a href="#">~swaywm/wlroots</a>
+          </p>
+          <blockquote>
+            <blockquote>
+              We might need to mark backend_autocreate as unstable.
+            </blockquote>
+            <p>
+            You probably mean "all functions that create a backend".
+            </p>
+            <blockquote>
+              I'm not thrilled with the renderer create function in any case, it
+              might be worth reconsidering how that works.
+            </blockquote>
+            <p>
+            I was thinking of replacing that with a struct.
+            </p>
+          </blockquote>
+        </div>
+        {% endfor %}
+      </div>
       <a href="#" class="btn btn-default btn-block">
         View more <i class="fa fa-caret-right"></i></a>
       </a>
