@@ -23,6 +23,11 @@ class Email(Base):
     parent = sa.orm.relationship('Email',
             backref=sa.orm.backref('replies', remote_side=[id]))
 
+    #thread_id = sa.Column(sa.Integer, sa.ForeignKey('email.id'))
+    #thread = sa.orm.relationship('Email')
+    #replies = sa.Column(sa.Integer)
+    #participants = sa.Column(sa.Integer)
+
     sender_id = sa.Column(sa.Integer, sa.ForeignKey('user.id'))
     sender = sa.orm.relationship('User', backref=sa.orm.backref('sent_messages'))
 

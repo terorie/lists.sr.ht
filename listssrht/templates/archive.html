@@ -1,4 +1,11 @@
 {% extends "lists.html" %}
+{% block title %}
+<title>
+  {{ owner.canonical_name() }}/{{ ml.name }} archives
+  &mdash;
+  {{ cfg("sr.ht", "site-name") }} lists
+</title>
+{% endblock %}
 {% block content %}
 <div class="container">
   <div class="row">
@@ -38,41 +45,29 @@
           value="{{ search if search else "" }}" />
       </form>
       <div class="event-list">
-        {% for i in range(1, 20) %}
+        {% for message in threads %}
         <div class="event archive-entry">
           <small class="text-muted pull-right">
-            {% if i % 2 == 0 %}
-            <span>
-              <i class="text-success fa fa-check"></i>
-              <i class="text-success fa fa-check"></i>
-              <i class="text-danger fa fa-times"></i>
-            </span>
-            {% endif %}
+            {# TODO: Source these from the database #}
             <span><i class="fa fa-reply"></i> 5</span>
             <span><i class="fa fa-user"></i> 3</span>
             <span>
-              <i class="fa fa-clock-o"></i> {{ test | date }}
+              <i class="fa fa-clock-o"></i> {{ message.updated | date }}
             </span>
           </small>
           <h4>
-            {% if i % 2 == 0 %}
-            <i class="fa fa-code-fork"></i>
-            <a href="#">
-              WIP: Atomic layout updates
+            <a href="{{
+              url_for('html.thread',
+                owner_name=owner.canonical_name(),
+                list_name=ml.name,
+                message_id=message.message_id)
+            }}">
+              {{ message.subject }}
             </a>
-            <small class="text-muted" style="margin: 0;">[v2]</small>
-            {% else %}
-            <a href="#">
-              API stability guarantee
-            </a>
-            {% endif %}
           </h4>
         </div>
         {% endfor %}
       </div>
-      <a href="#" class="btn btn-default pull-right">
-        View more <i class="fa fa-caret-right"></i></a>
-      </a>
     </div>
   </div>
 </div>

@@ -1,0 +1,55 @@
+{% extends "lists.html" %}
+{% block title %}
+<title>
+  {{ owner.canonical_name() }}/{{ ml.name }} archives
+  &mdash;
+  {{ cfg("sr.ht", "site-name") }} lists
+</title>
+{% endblock %}
+{% block content %}
+<div class="container">
+  <div class="row">
+    <div class="col-md-4">
+      <h2>
+        <a
+          href="#" {# TODO: User page #}
+        >{{ owner.canonical_name() }}</a>/<a
+          href="{{ url_for('html.archives',
+            owner_name=owner.canonical_name(),
+            list_name=ml.name) }}"
+        >{{ ml.name }}</a>
+      </h2>
+      <p>
+        This is a mailing list for talkin about stuff. Yadda yadda, user can
+        put whatever they want here. Rules for posting, links to the project,
+        etc.
+      </p>
+    </div>
+    <div class="col-md-8">
+      <h3>{{ thread.subject }}</h3>
+      {% set envelope = envelopes[thread.message_id] %}
+      <blockquote>
+        <p>
+          {% if thread.sender != None %}
+          <a href="#">
+            {{ thread.sender.username }}
+          </a>
+          {% else %}
+          {% if current_user %}
+          <a href="mailto:{{ envelope.get('From') }}">
+            {{ envelope.get('From') }}
+          </a>
+          {% else %}
+          {{ parseaddr(envelope.get('From'))[0] }}
+          {% endif %}
+          {% endif %}
+          <span class="text-muted">
+            {{ thread.created | date }}
+          </span>
+        </p>
+        <pre>{{ envelopes[thread.message_id].get_payload() }}</pre>
+      </blockquote>
+    </div>
+  </div>
+</div>
+{% endblock %}
