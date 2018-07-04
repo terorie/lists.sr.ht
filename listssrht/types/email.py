@@ -20,16 +20,23 @@ class Email(Base):
     list = sa.orm.relationship('List', backref=sa.orm.backref('messages'))
 
     parent_id = sa.Column(sa.Integer, sa.ForeignKey('email.id'))
-    parent = sa.orm.relationship('Email',
-            backref=sa.orm.backref('replies', remote_side=[id]))
+    replies = sa.orm.relationship('Email',
+            backref=sa.orm.backref('parent',
+                remote_side=[id]),
+            foreign_keys=[parent_id])
 
-    #thread_id = sa.Column(sa.Integer, sa.ForeignKey('email.id'))
-    #thread = sa.orm.relationship('Email')
-    #replies = sa.Column(sa.Integer)
-    #participants = sa.Column(sa.Integer)
+    thread_id = sa.Column(sa.Integer, sa.ForeignKey('email.id'))
+    descendants = sa.orm.relationship('Email',
+            backref=sa.orm.backref('thread',
+                remote_side=[id]),
+            foreign_keys=[thread_id])
+
+    nreplies = sa.Column(sa.Integer, server_default='0')
+    nparticipants = sa.Column(sa.Integer, server_default='1')
 
     sender_id = sa.Column(sa.Integer, sa.ForeignKey('user.id'))
-    sender = sa.orm.relationship('User', backref=sa.orm.backref('sent_messages'))
+    sender = sa.orm.relationship('User',
+            backref=sa.orm.backref('sent_messages'))
 
     # TODO: Enumerate CC's and create a relationship there
 

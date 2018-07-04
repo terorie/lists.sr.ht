@@ -35,10 +35,17 @@ def _archive(dest, envelope):
     reply_to = envelope["In-Reply-To"]
     parent = Email.query.filter(Email.message_id == reply_to).one_or_none()
     if parent is not None:
-        # TODO: Climb up and find the top-level message and update it
-        # - Total replies
-        # - Total participants
         mail.parent_id = parent.id
+        thread = parent
+        tenvelope = email.message_from_string(thread.envelope)
+        participants = set([envelope["From"], tenvelope["From"]])
+        while thread.parent_id != None:
+            tenvelope = email.message_from_string(thread.envelope)
+            participants.update([tenvelope["From"]])
+            thread = thread.parent
+        mail.thread_id = thread.id
+        thread.nreplies += 1
+        thread.nparticipants = len(participants)
     # TODO: Enumerate CC's and create SQL relationships for them
     # TODO: Some users will have many email addresses
     sender = envelope["From"]

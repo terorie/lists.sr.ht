@@ -1,7 +1,7 @@
 {% extends "lists.html" %}
 {% block title %}
 <title>
-  {{ owner.canonical_name() }}/{{ ml.name }} archives
+  {{ thread.subject }}
   &mdash;
   {{ cfg("sr.ht", "site-name") }} lists
 </title>
@@ -26,13 +26,18 @@
       </p>
     </div>
     <div class="col-md-8">
-      <h3>{{ thread.subject }}</h3>
-      {% set envelope = envelopes[thread.message_id] %}
-      <blockquote>
+      {% macro display_message(msg) %}
+      {% set stripped_subject =
+        msg.subject[4:] if msg.subject.upper().startswith("RE: ") else msg.subject %}
+      {% if msg == thread or stripped_subject != thread.subject %}
+      <h3>{{ msg.subject }}</h3>
+      {% endif %}
+      {% set envelope = envelopes[msg.message_id] %}
+      <div>
         <p>
-          {% if thread.sender != None %}
+          {% if msg.sender != None %}
           <a href="#">
-            {{ thread.sender.username }}
+            {{ msg.sender.username }}
           </a>
           {% else %}
           {% if current_user %}
@@ -43,12 +48,31 @@
           {{ parseaddr(envelope.get('From'))[0] }}
           {% endif %}
           {% endif %}
-          <span class="text-muted">
-            {{ thread.created | date }}
-          </span>
+          <a
+            id="{{ msg.message_id }}"
+            href="#{{ msg.message_id }}"
+            class="text-muted"
+          >{{ msg.created | date }}</a>
         </p>
-        <pre>{{ envelopes[thread.message_id].get_payload() }}</pre>
-      </blockquote>
+        <pre>{{ envelope.get_payload() }}</pre>
+
+        {% if len(msg.replies) > 1 %}
+        {% for child in msg.replies %}
+        <blockquote>
+        {{ display_message(child) }}
+        </blockquote>
+        {% endfor %}
+        {% endif %}
+      </div>
+
+      {% if len(msg.replies) <= 1 %}
+      {% for child in msg.replies %}
+      {{ display_message(child) }}
+      {% endfor %}
+      {% endif %}
+      {% endmacro %}
+
+      {{ display_message(thread) }}
     </div>
   </div>
 </div>

@@ -48,7 +48,8 @@ def thread(owner_name, list_name, message_id):
     if not thread:
         abort(404)
     envelopes = {
-        thread.message_id: email.message_from_string(thread.envelope)
+        m.message_id: email.message_from_string(m.envelope)
+            for m in [thread] + thread.descendants
     }
     # Redirect to top-level message if this is a child
     # With the hash set to the child's message ID

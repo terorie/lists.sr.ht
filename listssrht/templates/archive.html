@@ -48,9 +48,18 @@
         {% for message in threads %}
         <div class="event archive-entry">
           <small class="text-muted pull-right">
-            {# TODO: Source these from the database #}
-            <span><i class="fa fa-reply"></i> 5</span>
-            <span><i class="fa fa-user"></i> 3</span>
+            {% if message.nreplies > 0 %}
+            <span>
+              <i class="fa fa-reply"></i>
+              {{message.nreplies}}
+            </span>
+            {% endif %}
+            {% if message.nparticipants > 1 %}
+            <span>
+              <i class="fa fa-user"></i>
+              {{message.nparticipants}}
+            </span>
+            {% endif %}
             <span>
               <i class="fa fa-clock-o"></i> {{ message.updated | date }}
             </span>
