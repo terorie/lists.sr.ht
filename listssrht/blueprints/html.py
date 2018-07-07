@@ -1,6 +1,8 @@
-from flask import Blueprint, render_template, abort
+from flask import Blueprint, render_template, abort, request
 from flask_login import current_user
+from srht.flask import paginate_query
 from listssrht.types import List, User, Email
+from sqlalchemy import or_
 import email
 import email.utils
 
@@ -24,17 +26,37 @@ def get_list(owner_name, list_name):
     ml = List.query.filter(List.name == list_name).one_or_none()
     return owner, ml
 
+def apply_search(query):
+    search = request.args.get("search")
+    if not search:
+        return query, None
+    terms = search.split(" ")
+    for term in terms:
+        term = term.lower()
+        if ":" in term:
+            prop, value = term.split(":")
+        else:
+            prop, value = None, term
+        # TODO: Custom search critiera
+        query = query.filter(or_(
+            Email.envelope.ilike("%" + value + "%"),
+            Email.subject.ilike("%" + value + "%")))
+    return query, search
+
 @html.route("/<owner_name>/<list_name>")
 def archives(owner_name, list_name):
     owner, ml = get_list(owner_name, list_name)
     if not ml:
         abort(404)
-    # TODO: pagination
     threads = (Email.query
             .filter(Email.list_id == ml.id)
             .filter(Email.parent_id == None)
-        ).order_by(Email.updated.desc()).limit(25).all()
-    return render_template("archive.html", owner=owner, ml=ml, threads=threads)
+        ).order_by(Email.updated.desc())
+    threads, search = apply_search(threads)
+    threads, pagination = paginate_query(threads)
+    return render_template("archive.html",
+            owner=owner, ml=ml, threads=threads,
+            search=search, **pagination)
 
 @html.route("/<owner_name>/<list_name>/<message_id>")
 def thread(owner_name, list_name, message_id):
