@@ -1,12 +1,16 @@
 from flask import Blueprint, render_template, request, redirect, url_for
 from flask_login import current_user
+from srht.config import cfg
 from srht.database import db
 from srht.flask import loginrequired
 from srht.validation import Validation
 from listssrht.types import List, User, Email, Subscription
+import requests
 import re
 
 user = Blueprint("user", __name__)
+
+meta_uri = cfg("network", "meta")
 
 @user.route("/")
 def index():
@@ -21,6 +25,24 @@ def index():
             .filter(Subscription.user_id == current_user.id)
             .order_by(Email.created.desc())).limit(10).all()
     return render_template("dashboard.html", recent=recent)
+
+@user.route("/~<username>")
+def user_profile(username):
+    user = User.query.filter(User.username == username).first()
+    if not user:
+        abort(404)
+    recent = (Email.query
+            .filter(Email.sender_id == user.id)
+            .order_by(Email.created.desc())).limit(10).all()
+    r = requests.get(meta_uri + "/api/user/profile", headers={
+        "Authorization": "token " + user.oauth_token
+    }) # TODO: cache
+    if r.status_code == 200:
+        profile = r.json()
+    else:
+        profile = None
+    return render_template("user.html",
+            user=user, recent=recent, profile=profile)
 
 @user.route("/lists/create")
 @loginrequired
