@@ -43,6 +43,11 @@ app.register_blueprint(html)
 meta_sr_ht = cfg("network", "meta")
 meta_client_id = cfg("meta.sr.ht", "oauth-client-id")
 
+def post_address(ml, suffix=""):
+    domain = cfg("lists", "posting-domain")
+    return "{}/{}{}@{}".format(
+            ml.owner.canonical_name(), ml.name, suffix, domain)
+
 @app.context_processor
 def inject():
     return {
@@ -51,4 +56,5 @@ def inject():
         "current_user": (User.query
                 .filter(User.id == current_user.id).one_or_none()
             if current_user else None),
+        "post_address": post_address
     }

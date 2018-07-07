@@ -21,18 +21,14 @@
         etc.
       </p>
       <p>
-        <a href="/create" class="btn btn-primary btn-block">
-          New post
-          <i class="fa fa-caret-right"></i>
-        </a>
-        <a href="/subscriptions" class="btn btn-default btn-block">
-          Browse patches
-          <i class="fa fa-caret-right"></i>
-        </a>
-        <a href="/subscriptions" class="btn btn-default btn-block">
-          Subscribe
-          <i class="fa fa-caret-right"></i>
-        </a>
+        <a
+          href="mailto:{{ post_address(ml, suffix="+subscribe") }}"
+          class="btn btn-primary btn-block"
+        >Subscribe <i class="fa fa-caret-right"></i></a>
+        <a
+          href="mailto:{{ post_address(ml) }}"
+          class="btn btn-default btn-block"
+        >New post <i class="fa fa-caret-right"></i></a>
       </p>
     </div>
     <div class="col-md-8">

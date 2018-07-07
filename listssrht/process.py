@@ -1,4 +1,4 @@
-from srht.config import cfg, load_config, loaded
+from srht.config import cfg, cfgi, load_config, loaded
 is_celery = False
 if not loaded():
     load_config("lists")
@@ -13,11 +13,56 @@ from listssrht.types import Email, List, User
 import email
 import io
 import json
+import smtplib
 from celery import Celery
+from email import policy
 from email.utils import make_msgid 
 from unidiff import PatchSet
 
 dispatch = Celery("lists.sr.ht", broker=cfg("lists", "redis"))
+
+smtp_host = cfg("mail", "smtp-host", default=None)
+smtp_port = cfgi("mail", "smtp-port", default=None)
+smtp_user = cfg("mail", "smtp-user", default=None)
+smtp_password = cfg("mail", "smtp-password", default=None)
+
+def _forward(dest, mail):
+    domain = cfg("lists", "posting-domain")
+    list_name = "{}/{}".format(dest.owner.canonical_name(), dest.name)
+    list_unsubscribe = list_name + "+unsubscribe@" + domain
+    list_subscribe = list_name + "+subscribe@" + domain
+    footer = """
+
+------
+Sent to the {} list on {}
+To unsubscribe, send an email to {}
+""".format(list_name, cfg("sr.ht", "site-name"), list_unsubscribe)
+    for m in mail.walk():
+        if m.get_content_type() == "text/plain":
+            m.set_content(m.get_content() + footer)
+    mail["List-Unsubscribe"] = "<mailto:{}?subject=unsubscribe>".format(
+            list_unsubscribe)
+    mail["List-Subscribe"] = "<mailto:{}?subject=subscribe>".format(
+            list_subscribe)
+    mail["List-Archive"] = "<{}://{}/{}>".format(
+            cfg("server", "protocol"), cfg("server", "domain"), list_name)
+    mail["List-Post"] = "<mailto:{}@{}>".format(list_name, domain)
+    mail["Sender"] = "{} <{}@{}>".format(list_name, list_name, domain)
+    # TODO: Encrypt emails
+    smtp = smtplib.SMTP(smtp_host, smtp_port)
+    smtp.ehlo()
+    if smtp.has_extn("STARTTLS"):
+        smtp.starttls()
+    smtp.login(smtp_user, smtp_password)
+    for sub in dest.subscribers:
+        if not sub.confirmed:
+            continue
+        to = sub.email
+        if sub.user:
+            to = sub.user.email
+        print("Forwarding message to " + to)
+        smtp.sendmail(smtp_user, [to], mail.as_string(unixfrom=True))
+    smtp.quit()
 
 def _archive(dest, envelope):
     mail = Email()
@@ -57,10 +102,10 @@ def _archive(dest, envelope):
 
 @dispatch.task
 def dispatch_message(list_id, mail):
-    mail = email.message_from_string(mail)
+    mail = email.message_from_string(mail, policy=policy.default)
     # We need all Message-IDs to be unique so it's better not to trust users
     # MTAs to generate them
     mail["Message-ID"] = make_msgid(domain=cfg("server", "domain"))
     dest = List.query.filter(List.id == list_id).one_or_none()
     _archive(dest, mail)
-    # TODO: forward to subscribers
+    _forward(dest, mail)

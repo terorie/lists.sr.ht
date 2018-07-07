@@ -41,6 +41,7 @@
           </a>
           {% else %}
           {% if current_user %}
+          {# TODO: Set To: to the ML and add In-Reply-To #}
           <a href="mailto:{{ envelope.get('From') }}">
             {{ envelope.get('From') }}
           </a>

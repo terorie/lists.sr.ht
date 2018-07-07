@@ -6,10 +6,10 @@ class Subscription(Base):
     id = sa.Column(sa.Integer, primary_key=True)
     created = sa.Column(sa.DateTime, nullable=False)
     updated = sa.Column(sa.DateTime, nullable=False)
-    email = sa.Column(sa.Unicode(512), nullable=False)
-    confirmed = sa.Column(sa.Boolean, nullable=False)
+    email = sa.Column(sa.Unicode(512))
+    confirmed = sa.Column(sa.Boolean, nullable=False, default=True)
 
-    list_id = sa.Column(sa.Integer, sa.ForeignKey('list.id'))
+    list_id = sa.Column(sa.Integer, sa.ForeignKey('list.id'), nullable=False)
     list = sa.orm.relationship('List', backref=sa.orm.backref('subscribers'))
 
     # Non-users can subscribe, so this might be null
@@ -18,4 +18,4 @@ class Subscription(Base):
 
     def __repr__(self):
         return '<Subscription {} {} -> list {}>'.format(
-                self.id, self.email, self.list_id)
+                self.id, self.email or self.user_id, self.list_id)
