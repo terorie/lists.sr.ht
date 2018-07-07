@@ -31,19 +31,10 @@ def _forward(dest, mail):
     list_name = "{}/{}".format(dest.owner.canonical_name(), dest.name)
     list_unsubscribe = list_name + "+unsubscribe@" + domain
     list_subscribe = list_name + "+subscribe@" + domain
-    footer = """
-
-------
-Sent to the {} list on {}
-To unsubscribe, send an email to {}
-""".format(list_name, cfg("sr.ht", "site-name"), list_unsubscribe)
-    for m in mail.walk():
-        if m.get_content_type() == "text/plain":
-            m.set_content(m.get_content() + footer)
-    mail["List-Unsubscribe"] = "<mailto:{}?subject=unsubscribe>".format(
-            list_unsubscribe)
-    mail["List-Subscribe"] = "<mailto:{}?subject=subscribe>".format(
-            list_subscribe)
+    mail["List-Unsubscribe"] = (
+            "<mailto:{}?subject=unsubscribe>".format(list_unsubscribe))
+    mail["List-Subscribe"] = (
+            "<mailto:{}?subject=subscribe>".format(list_subscribe))
     mail["List-Archive"] = "<{}://{}/{}>".format(
             cfg("server", "protocol"), cfg("server", "domain"), list_name)
     mail["List-Post"] = "<mailto:{}@{}>".format(list_name, domain)
@@ -103,9 +94,10 @@ def _archive(dest, envelope):
 @dispatch.task
 def dispatch_message(list_id, mail):
     mail = email.message_from_string(mail, policy=policy.default)
-    # We need all Message-IDs to be unique so it's better not to trust users
-    # MTAs to generate them
-    mail["Message-ID"] = make_msgid(domain=cfg("server", "domain"))
+    msgid = mail["Message-ID"]
+    if Email.query.filter(Email.message_id == msgid).count() > 0:
+        print("Dropping email due to duplicate message ID")
+        return
     dest = List.query.filter(List.id == list_id).one_or_none()
     _archive(dest, mail)
     _forward(dest, mail)
