@@ -53,7 +53,7 @@
             class="text-muted pull-right"
           >{{ msg.created | date }}</a>
         </p>
-        <pre>{{ msg.parsed().get_payload() }}</pre>
+        <pre>{{ msg.body }}</pre>
 
         {% if len(msg.replies) > 1 %}
         {% for child in msg.replies %}
