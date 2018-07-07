@@ -14,12 +14,8 @@
           href="{{url_for("user.create_list_GET")}}"
           class="btn btn-primary btn-block"
         >Create new list <i class="fa fa-caret-right"></i></a>
-        <a href="/subscriptions" class="btn btn-default btn-block">
-          Manage your subscriptions
-          <i class="fa fa-caret-right"></i>
-        </a>
-        <a href="/lists" class="btn btn-default btn-block">
-          Manage your lists
+        <a href="/~{{ current_user.username }}" class="btn btn-default btn-block">
+          View your profile
           <i class="fa fa-caret-right"></i>
         </a>
       </p>
