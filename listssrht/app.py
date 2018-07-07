@@ -34,11 +34,13 @@ def oauth_url(return_to):
     return "{}/oauth/authorize?client_id={}&scopes=profile&state={}".format(
         meta_sr_ht, meta_client_id, urllib.parse.quote_plus(return_to))
 
+from listssrht.blueprints.archives import archives
 from listssrht.blueprints.auth import auth
-from listssrht.blueprints.html import html
+from listssrht.blueprints.user import user
 
+app.register_blueprint(archives)
 app.register_blueprint(auth)
-app.register_blueprint(html)
+app.register_blueprint(user)
 
 meta_sr_ht = cfg("network", "meta")
 meta_client_id = cfg("meta.sr.ht", "oauth-client-id")

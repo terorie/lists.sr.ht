@@ -6,21 +6,7 @@ from sqlalchemy import or_
 import email
 import email.utils
 
-html = Blueprint("html", __name__)
-
-@html.route("/")
-def index():
-    if current_user is None:
-        return redirect(cfg("network", "meta"))
-    # TODO: This query is probably gonna get pretty expensive
-    recent = (Email.query
-            .join(List)
-            .join(Subscription)
-            .filter(Email.list_id == List.id)
-            .filter(Subscription.list_id == List.id)
-            .filter(Subscription.user_id == current_user.id)
-            .order_by(Email.created.desc())).limit(10).all()
-    return render_template("dashboard.html", recent=recent)
+archives = Blueprint("archives", __name__)
 
 def get_list(owner_name, list_name):
     if owner_name and owner_name.startswith('~'):
@@ -51,8 +37,8 @@ def apply_search(query):
             Email.subject.ilike("%" + value + "%")))
     return query, search
 
-@html.route("/<owner_name>/<list_name>")
-def archives(owner_name, list_name):
+@archives.route("/<owner_name>/<list_name>")
+def list(owner_name, list_name):
     owner, ml = get_list(owner_name, list_name)
     if not ml:
         abort(404)
@@ -66,7 +52,7 @@ def archives(owner_name, list_name):
             owner=owner, ml=ml, threads=threads,
             search=search, **pagination)
 
-@html.route("/<owner_name>/<list_name>/<message_id>")
+@archives.route("/<owner_name>/<list_name>/<message_id>")
 def thread(owner_name, list_name, message_id):
     owner, ml = get_list(owner_name, list_name)
     if not ml:
@@ -78,7 +64,7 @@ def thread(owner_name, list_name, message_id):
     if not thread:
         abort(404)
     if thread.thread_id != None:
-        return redirect(url_for("html.thread",
+        return redirect(url_for("archives.thread",
             owner_name=owner_name,
             list_name=list_name,
             message_id=thread.thread.message_id) + "#" + thread.message_id)

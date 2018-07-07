@@ -30,7 +30,7 @@
         {% for email in recent %}
         <div class="event">
           <h4>
-            <a href="{{ url_for("html.thread",
+            <a href="{{ url_for("archives.thread",
                 owner_name=email.list.owner.canonical_name(),
                 list_name=email.list.name,
                 message_id=email.thread.message_id if email.thread else email.message_id,
@@ -46,7 +46,7 @@
             </a>
             to
             <a
-              href="{{ url_for("html.archives",
+              href="{{ url_for("archives.list",
                 owner_name=email.list.owner.canonical_name(),
                 list_name=email.list.name
               ) }}"
