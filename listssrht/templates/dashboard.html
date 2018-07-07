@@ -21,6 +21,7 @@
       </p>
     </div>
     <div class="col-md-8">
+      {% if any(recent) %}
       <h3>Recent activity</h3>
       <div class="event-list">
         {% for email in recent %}
@@ -60,6 +61,11 @@
         </div>
         {% endfor %}
       </div>
+      {% else %}
+      <p>
+        Nothing to report here. Try participating in some mailing lists!
+      </p>
+      {% endif %}
     </div>
   </div>
 </div>
