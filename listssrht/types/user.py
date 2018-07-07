@@ -1,5 +1,7 @@
 import sqlalchemy as sa
 from srht.database import Base
+import base64
+import os
 
 class User(Base):
     __tablename__ = 'user'
@@ -7,6 +9,7 @@ class User(Base):
     username = sa.Column(sa.Unicode(256))
     created = sa.Column(sa.DateTime, nullable=False)
     updated = sa.Column(sa.DateTime, nullable=False)
+    session = sa.Column(sa.String(128))
     oauth_token = sa.Column(sa.String(256), nullable=False)
     oauth_token_expires = sa.Column(sa.DateTime, nullable=False)
     oauth_token_scopes = sa.Column(sa.String, nullable=False, default="")
@@ -21,9 +24,15 @@ class User(Base):
 
     def is_authenticated(self):
         return True
+
     def is_active(self):
         return True
+
     def is_anonymous(self):
         return False
+
     def get_id(self):
-        return self.username
+        return self.session
+
+    def generate_session(self):
+        self.session = base64.urlsafe_b64encode(os.urandom(64)).decode('utf-8')
