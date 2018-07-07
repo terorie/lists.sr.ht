@@ -11,6 +11,7 @@ if is_celery:
 from listssrht.types import Email, List, User
 
 import email
+import email.utils
 import io
 import json
 import smtplib
@@ -84,8 +85,8 @@ def _archive(dest, envelope):
         thread.nparticipants = len(participants)
     # TODO: Enumerate CC's and create SQL relationships for them
     # TODO: Some users will have many email addresses
-    sender = envelope["From"]
-    sender = User.query.filter(User.email == sender).one_or_none()
+    sender = email.utils.parseaddr(envelope["From"])
+    sender = User.query.filter(User.email == sender[1]).one_or_none()
     if sender:
         mail.sender_id = sender.id
     db.session.add(mail)

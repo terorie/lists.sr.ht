@@ -1,9 +1,7 @@
 {% extends "lists.html" %}
 {% block title %}
 <title>
-  {{ thread.subject }}
-  &mdash;
-  {{ cfg("sr.ht", "site-name") }} lists
+  {{ thread.subject }} &mdash; {{ cfg("sr.ht", "site-name") }} lists
 </title>
 {% endblock %}
 {% block content %}
@@ -12,7 +10,7 @@
     <div class="col-md-4">
       <h2>
         <a
-          href="#" {# TODO: User page #}
+          href="/{{ owner.canonical_name() }}"
         >{{ owner.canonical_name() }}</a>/<a
           href="{{ url_for('archives.list',
             owner_name=owner.canonical_name(),
@@ -20,9 +18,7 @@
         >{{ ml.name }}</a>
       </h2>
       <p>
-        This is a mailing list for talkin about stuff. Yadda yadda, user can
-        put whatever they want here. Rules for posting, links to the project,
-        etc.
+        {{ ml.description | md }}
       </p>
     </div>
     <div class="col-md-8">

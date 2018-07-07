@@ -1,9 +1,7 @@
 {% extends "lists.html" %}
 {% block title %}
 <title>
-  {{ owner.canonical_name() }}/{{ ml.name }} archives
-  &mdash;
-  {{ cfg("sr.ht", "site-name") }} lists
+  {{ owner.canonical_name() }}/{{ ml.name }} archives &mdash; {{ cfg("sr.ht", "site-name") }} lists
 </title>
 {% endblock %}
 {% block content %}
