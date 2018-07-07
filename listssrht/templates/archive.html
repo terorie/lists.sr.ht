@@ -15,11 +15,9 @@
           href="/{{ owner.canonical_name() }}"
         >{{ owner.canonical_name() }}</a>/{{ ml.name }}
       </h2>
-      <p>
-        This is a mailing list for talkin about stuff. Yadda yadda, user can
-        put whatever they want here. Rules for posting, links to the project,
-        etc.
-      </p>
+      {% if ml.description %}
+      {{ml.description | md}}
+      {% endif %}
       <p>
         <a
           href="mailto:{{ post_address(ml, suffix="+subscribe") }}"

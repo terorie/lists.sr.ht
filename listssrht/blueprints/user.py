@@ -55,6 +55,14 @@ def create_list_POST():
     db.session.add(ml)
     db.session.commit()
 
+    # Auto-subscribe the owner
+    sub = Subscription()
+    sub.user_id = current_user.id
+    sub.list_id = ml.id
+    sub.confirmed = True
+    db.session.add(sub)
+    db.session.commit()
+
     return redirect(url_for("archives.list",
             owner_name=current_user.canonical_name(),
             list_name=ml.name))
