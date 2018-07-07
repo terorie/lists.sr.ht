@@ -6,8 +6,8 @@ user = Blueprint("user", __name__)
 
 @user.route("/")
 def index():
-    if current_user is None:
-        return redirect(cfg("network", "meta"))
+    if not current_user:
+        return render_template("index.html")
     # TODO: This query is probably gonna get pretty expensive
     recent = (Email.query
             .join(List)

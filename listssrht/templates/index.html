@@ -1,0 +1,18 @@
+{% extends "lists.html" %}
+{% block content %}
+<div class="container">
+  <div class="row">
+    <div class="col-md-6">
+      <p>
+        Welcome to {{cfg("server", "domain")}}. This is a part of the
+        <a href="{{cfg("network", "meta")}}">
+          {{cfg("sr.ht", "site-name")}} network
+        </a>
+        and provides mailing list services to members. If you already have an
+        account, you can <a href="{{oauth_url}}">log in here</a>. New users can
+        <a href="{{cfg("network", "meta")}}">register here</a>.
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock %}
