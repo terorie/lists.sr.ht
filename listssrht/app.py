@@ -1,6 +1,7 @@
 from srht.flask import SrhtFlask
 from srht.config import cfg, load_config
 load_config("lists")
+from urllib.parse import quote
 
 from srht.database import DbSession
 db = DbSession(cfg("sr.ht", "connection-string"))
@@ -30,7 +31,8 @@ class LoginApp(SrhtFlask):
         @self.context_processor
         def inject():
             return {
-                "post_address": _post_address
+                "post_address": _post_address,
+                "quote": quote,
             }
 
         @self.login_manager.user_loader

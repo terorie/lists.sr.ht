@@ -40,9 +40,11 @@
           </a>
           {% else %}
           {% if current_user %}
-          <a href="mailto:{{ msg.parsed().get('From') }}">
-            {{ msg.parsed().get('From') }}
-          </a>
+          <a href="mailto:{{
+              msg.parsed().get('From')
+            }}&in-reply-to={{
+              quote(msg.message_id)
+            }}">{{ msg.parsed().get('From') }}</a>
           {% else %}
           {{ parseaddr(msg.parsed().get('From'))[0] }}
           {% endif %}
