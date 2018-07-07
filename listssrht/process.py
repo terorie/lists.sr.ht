@@ -42,8 +42,7 @@ def _forward(dest, mail):
     # TODO: Encrypt emails
     smtp = smtplib.SMTP(smtp_host, smtp_port)
     smtp.ehlo()
-    if smtp.has_extn("STARTTLS"):
-        smtp.starttls()
+    smtp.starttls()
     smtp.login(smtp_user, smtp_password)
     for sub in dest.subscribers:
         if not sub.confirmed:
