@@ -47,7 +47,7 @@ def apply_search(query):
             prop, value = None, term
         # TODO: Custom search critiera
         query = query.filter(or_(
-            Email.envelope.ilike("%" + value + "%"),
+            Email.body.ilike("%" + value + "%"),
             Email.subject.ilike("%" + value + "%")))
     return query, search
 
