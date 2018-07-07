@@ -19,14 +19,44 @@
       {{ml.description | md}}
       {% endif %}
       <p>
+        {% if current_user %}
+        {% if subscription %}
+        <form method="POST" action="{{url_for("archives.unsubscribe",
+              owner_name=owner.canonical_name(), list_name=ml.name) }}">
+          <a
+            href="mailto:{{ post_address(ml) }}"
+            class="btn btn-primary btn-block"
+          >New post <i class="fa fa-caret-right"></i></a>
+          <button class="btn btn-default btn-block">
+            Unsubscribe <i class="fa fa-caret-right"></i>
+          </button>
+        </form>
+        {% else %}
+        <form method="POST" action="{{url_for("archives.subscribe",
+              owner_name=owner.canonical_name(), list_name=ml.name) }}">
+          <button class="btn btn-primary btn-block">
+            Subscribe <i class="fa fa-caret-right"></i>
+          </button>
+          {% if ml.allow_nonsubscriber_postings %}
+          <a
+            href="mailto:{{ post_address(ml) }}"
+            class="btn btn-default btn-block"
+          >New post <i class="fa fa-caret-right"></i></a>
+          {% endif %}
+        </form>
+        {% endif %}
+        {% else %}
         <a
           href="mailto:{{ post_address(ml, suffix="+subscribe") }}"
           class="btn btn-primary btn-block"
         >Subscribe <i class="fa fa-caret-right"></i></a>
+        {% if ml.allow_external_postings %}
         <a
           href="mailto:{{ post_address(ml) }}"
           class="btn btn-default btn-block"
         >New post <i class="fa fa-caret-right"></i></a>
+        {% endif %}
+        {% endif %}
       </p>
     </div>
     <div class="col-md-8">
