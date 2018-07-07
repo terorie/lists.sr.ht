@@ -67,6 +67,7 @@ def _archive(dest, envelope):
     mail.is_patch = len(patch) > 0
     mail.is_request_pull = False # TODO: Detect git request-pull
     mail.list_id = dest.id
+    mail.body = envelope.get_content()
     reply_to = envelope["In-Reply-To"]
     parent = Email.query.filter(Email.message_id == reply_to).one_or_none()
     if parent is not None:

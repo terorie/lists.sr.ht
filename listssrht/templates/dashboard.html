@@ -23,72 +23,41 @@
           <i class="fa fa-caret-right"></i>
         </a>
       </p>
-      <h3>Patch queue</h3>
-      <div class="event-list">
-        {% for i in range(1, 8) %}
-        <div class="event">
-          <h4>
-            <a href="#">
-              WIP: Atomic layout updates
-            </a>
-            <small class="text-muted" style="margin-left: 0">
-              [v2]
-            </small>
-          </h4>
-          <p>
-            <i class="text-success fa fa-check"></i>
-            review <strong class="text-success">+2</strong>
-            <span style="margin-left: 0.5rem;"></span>
-            <i class="text-success fa fa-check"></i>
-            build <a href="#">#4032</a>
-            <span style="margin-left: 0.5rem;"></span>
-            <i class="text-danger fa fa-times"></i>
-            merge
-          </p>
-        </div>
-        {% endfor %}
-        <a href="/patches" class="btn btn-default pull-right">
-          View more
-          <i class="fa fa-caret-right"></i>
-        </a>
-      </div>
     </div>
     <div class="col-md-8">
       <h3>Recent activity</h3>
       <div class="event-list">
-        {% for i in range(1, 10) %}
+        {% for email in recent %}
         <div class="event">
           <h4>
-            <a href="#">
-              RE: API stability guarantee
+            <a href="{{ url_for("html.thread",
+                owner_name=email.list.owner.canonical_name(),
+                list_name=email.list.name,
+                message_id=email.thread.message_id if email.thread else email.message_id,
+              ) }}{{ "#" + email.message_id if email.thread else "" }}">
+              {{ email.subject }}
             </a>
-            <small class="text-muted pull-right">{{ test | date }}</small>
+            <small class="text-muted pull-right">{{ email.created | date }}</small>
           </h4>
           <p>
-            From <a href="#">Simon Ser</a>
-            to <a href="#">~swaywm/wlroots</a>
+            From
+            <a href="mailto:{{ email.parsed().get('From') }}">
+              {{ email.parsed().get('From') }}
+            </a>
+            to
+            <a
+              href="{{ url_for("html.archives",
+                owner_name=email.list.owner.canonical_name(),
+                list_name=email.list.name
+              ) }}"
+              >{{email.list.owner.canonical_name()}}/{{email.list.name}}</a>
           </p>
           <blockquote>
-            <blockquote>
-              We might need to mark backend_autocreate as unstable.
-            </blockquote>
-            <p>
-            You probably mean "all functions that create a backend".
-            </p>
-            <blockquote>
-              I'm not thrilled with the renderer create function in any case, it
-              might be worth reconsidering how that works.
-            </blockquote>
-            <p>
-            I was thinking of replacing that with a struct.
-            </p>
+            <pre style="background: transparent">{{ email.body }}</pre>
           </blockquote>
         </div>
         {% endfor %}
       </div>
-      <a href="#" class="btn btn-default btn-block">
-        View more <i class="fa fa-caret-right"></i></a>
-      </a>
     </div>
   </div>
 </div>

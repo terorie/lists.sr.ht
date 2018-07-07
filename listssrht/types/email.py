@@ -1,3 +1,4 @@
+import email
 import sqlalchemy as sa
 from srht.database import Base
 
@@ -10,6 +11,7 @@ class Email(Base):
     # This will be generated if not present
     message_id = sa.Column(sa.Unicode(512), nullable=False)
     headers = sa.Column(sa.JSON, nullable=False)
+    body = sa.Column(sa.Unicode, nullable=False)
     envelope = sa.Column(sa.Unicode, nullable=False)
     is_patch = sa.Column(sa.Boolean, nullable=False)
     """true if email is via git format-patch"""
@@ -42,3 +44,9 @@ class Email(Base):
 
     def __repr__(self):
         return '<Email {} {}>'.format(self.id, self.subject)
+
+    def parsed(self):
+        if hasattr(self, "_parsed"):
+            return self._parsed
+        self._parsed = email.message_from_string(self.envelope)
+        return self._parsed
