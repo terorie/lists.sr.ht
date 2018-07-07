@@ -1,3 +1,4 @@
+from email.utils import parseaddr
 from flask import Blueprint, render_template, request, redirect, url_for
 from flask_login import current_user
 from srht.config import cfg
@@ -42,7 +43,7 @@ def user_profile(username):
     else:
         profile = None
     return render_template("user.html",
-            user=user, recent=recent, profile=profile)
+            user=user, recent=recent, profile=profile, parseaddr=parseaddr)
 
 @user.route("/lists/create")
 @loginrequired
