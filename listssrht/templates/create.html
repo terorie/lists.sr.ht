@@ -1,0 +1,40 @@
+{% extends "lists.html" %}
+{% block content %}
+<div class="container">
+  <div class="row">
+    <div class="col-md-6">
+      <h3>Create new mailing list</h3>
+      <form method="POST" action="{{url_for(".create_list_POST")}}">
+        <div class="form-group">
+          <label for="name">Name</label>
+          <input
+            type="text"
+            name="list_name"
+            id="list_name"
+            class="form-control {{valid.cls("list_name")}}"
+            value="{{ list_name or "" }}" />
+          {{valid.summary("list_name")}}
+        </div>
+        <div class="form-group">
+          <label for="description">Description</label>
+          <textarea
+            name="list_desc"
+            id="list_desc"
+            class="form-control {{valid.cls("list_desc")}}"
+            value="{{ list_desc or "" }}"
+            rows="5"
+            aria-describedby="list_desc-help">{{list_desc or ""}}</textarea>
+          <p id="list_desc-help" class="form-text text-muted">
+            Markdown supported
+          </p>
+          {{valid.summary("list_desc")}}
+        </div>
+        <button type="submit" class="btn btn-primary">
+          Create
+          <i class="fa fa-caret-right"></i>
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

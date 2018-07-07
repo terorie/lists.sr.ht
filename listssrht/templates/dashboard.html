@@ -10,10 +10,10 @@
         <a href="https://man.sr.ht/lists.sr.ht">available here</a>.
       </p>
       <p>
-        <a href="/create" class="btn btn-primary btn-block">
-          Create new list
-          <i class="fa fa-caret-right"></i>
-        </a>
+        <a
+          href="{{url_for("user.create_list_GET")}}"
+          class="btn btn-primary btn-block"
+        >Create new list <i class="fa fa-caret-right"></i></a>
         <a href="/subscriptions" class="btn btn-default btn-block">
           Manage your subscriptions
           <i class="fa fa-caret-right"></i>
