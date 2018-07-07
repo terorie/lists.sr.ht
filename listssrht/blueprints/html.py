@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, abort, request
+from flask import Blueprint, render_template, abort, request, redirect, url_for
 from flask_login import current_user
 from srht.flask import paginate_query
 from listssrht.types import List, User, Email, Subscription
@@ -77,8 +77,11 @@ def thread(owner_name, list_name, message_id):
         ).one_or_none()
     if not thread:
         abort(404)
-    # Redirect to top-level message if this is a child
-    # With the hash set to the child's message ID
+    if thread.thread_id != None:
+        return redirect(url_for("html.thread",
+            owner_name=owner_name,
+            list_name=list_name,
+            message_id=thread.thread.message_id) + "#" + thread.message_id)
     return render_template("thread.html",
             owner=owner,
             ml=ml,
