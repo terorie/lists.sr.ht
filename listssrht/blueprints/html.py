@@ -77,15 +77,10 @@ def thread(owner_name, list_name, message_id):
         ).one_or_none()
     if not thread:
         abort(404)
-    envelopes = {
-        m.message_id: email.message_from_string(m.envelope)
-            for m in [thread] + thread.descendants
-    }
     # Redirect to top-level message if this is a child
     # With the hash set to the child's message ID
     return render_template("thread.html",
             owner=owner,
             ml=ml,
             thread=thread,
-            envelopes=envelopes,
             parseaddr=email.utils.parseaddr)

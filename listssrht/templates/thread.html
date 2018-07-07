@@ -32,7 +32,6 @@
       {% if msg == thread or stripped_subject != thread.subject %}
       <h3>{{ msg.subject }}</h3>
       {% endif %}
-      {% set envelope = envelopes[msg.message_id] %}
       <div>
         <p>
           {% if msg.sender != None %}
@@ -41,12 +40,11 @@
           </a>
           {% else %}
           {% if current_user %}
-          {# TODO: Set To: to the ML and add In-Reply-To #}
-          <a href="mailto:{{ envelope.get('From') }}">
-            {{ envelope.get('From') }}
+          <a href="mailto:{{ msg.parsed().get('From') }}">
+            {{ msg.parsed().get('From') }}
           </a>
           {% else %}
-          {{ parseaddr(envelope.get('From'))[0] }}
+          {{ parseaddr(msg.parsed().get('From'))[0] }}
           {% endif %}
           {% endif %}
           <a
@@ -55,7 +53,7 @@
             class="text-muted pull-right"
           >{{ msg.created | date }}</a>
         </p>
-        <pre>{{ envelope.get_payload() }}</pre>
+        <pre>{{ msg.parsed().get_payload() }}</pre>
 
         {% if len(msg.replies) > 1 %}
         {% for child in msg.replies %}
