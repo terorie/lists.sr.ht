@@ -31,8 +31,8 @@
       <div>
         <p>
           {% if msg.sender != None %}
-          <a href="#">
-            {{ msg.sender.username }}
+          <a href="/{{ msg.sender.canonical_name() }}">
+            {{ msg.sender.canonical_name() }}
           </a>
           {% else %}
           {% if current_user %}
