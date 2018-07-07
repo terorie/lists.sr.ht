@@ -21,6 +21,8 @@ class LoginApp(SrhtFlask):
     def __init__(self):
         super().__init__("lists", __name__)
 
+        self.url_map.strict_slashes = False
+
         self.register_blueprint(archives)
         self.register_blueprint(user)
 
