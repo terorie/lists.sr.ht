@@ -54,9 +54,9 @@ class MailHandler:
             owner_id = await self.fetch_user.fetchval(owner[1:])
             if not owner_id:
                 return None
-            list_id, nonsubscriber, external = await self.fetch_list.fetchrow(
+            result = await self.fetch_list.fetchrow(
                     owner_id, list_name)
-            return list_id, nonsubscriber, external
+            return result
         else:
             # TODO: Attempt fallback method (e.g. users.x.y@)
             return None
@@ -92,10 +92,11 @@ class MailHandler:
 
     async def handle_DATA(self, server, session, envelope):
         address = envelope.rcpt_tos[0]
-        dest, nonsub, external = await self.lookup_destination(address)
+        dest = await self.lookup_destination(address)
         if dest is None:
             print("Rejected, mailing list not found")
             return "550 The mailing list you requested does not exist."
+        dest, nonsub, external = dest
         mail = email.message_from_bytes(envelope.content)
         err = self.validate(mail)
         if err is not None:
