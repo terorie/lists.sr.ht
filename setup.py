@@ -14,7 +14,9 @@ setup(
   packages = [
       'listssrht',
       'listssrht.types',
-      'listssrht.blueprints'
+      'listssrht.blueprints',
+      'listssrht.alembic',
+      'listssrht.alembic.versions'
   ],
   version = ver,
   description = 'lists.sr.ht website',
