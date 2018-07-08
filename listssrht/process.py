@@ -8,7 +8,7 @@ if is_celery:
     db = DbSession(cfg("sr.ht", "connection-string"))
     import listssrht.types
     db.init()
-from listssrht.types import Email, List, User, Subscription
+from listssrht.types import Email, List, User, Subscription, ListAccess
 
 import email
 import email.utils
@@ -40,6 +40,7 @@ def _forward(dest, mail):
     mail["List-Archive"] = "<{}://{}/{}>".format(
             cfg("server", "protocol"), cfg("server", "domain"), list_name)
     mail["List-Post"] = "<mailto:{}@{}>".format(list_name, domain)
+    mail["List-ID"] = "{} <{}@{}>".format(dest.name, list_name, domain)
     mail["Sender"] = "{} <{}@{}>".format(list_name, list_name, domain)
     # TODO: Encrypt emails
     smtp = smtplib.SMTP(smtp_host, smtp_port)
@@ -95,14 +96,30 @@ def _subscribe(dest, mail):
     sender = email.utils.parseaddr(mail["From"])
     user = User.query.filter(User.email == sender[1]).one_or_none()
     if user:
+        perms = dest.account_permissions
         sub = Subscription.query.filter(
             Subscription.user_id == user.id).one_or_none()
     else:
+        perms = dest.nonsubscriber_permissions
         sub = Subscription.query.filter(
             Subscription.email == sender[1]).one_or_none()
+
     list_addr = dest.owner.canonical_name() + "/" + dest.name
     message = None
-    if sub is None:
+
+    # TODO: User-specific/email-specific overrides
+    if ListAccess.browse not in perms:
+        reply = MIMEText("""Hi {}!
+
+We got your request to subscribe to {}, but unfortunately subscriptions to this
+list are restricted. Your request has been disregarded.{}
+        """.format(sender[0] or sender[1], list_addr, ("""
+
+However, you are permitted to post mail to this list at this address:
+
+{}@{}""".format(list_addr, cfg("lists", "posting-domain"))
+        if ListAccess.post in perms else "")))
+    elif sub is None:
         reply = MIMEText("""Hi {}!
 
 Your subscription to {} is confirmed! To unsubscribe in the future, send an
