@@ -165,8 +165,6 @@ def settings_POST(owner_name, list_name):
         for access in ListAccess:
             if access in [ListAccess.none]:
                 continue
-            print(valid.optional("perm_{}_{}".format(
-                    perm, access.name)))
             if valid.optional("perm_{}_{}".format(
                     perm, access.name)) != None:
                 bitfield |= access
