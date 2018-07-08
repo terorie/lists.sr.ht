@@ -25,7 +25,7 @@ def get_list(owner_name, list_name):
             access = ListAccess.all
         elif (Subscription.query
                 .filter(Subscription.user_id == current_user.id)).count():
-            access = ml.subscriber_permissions
+            access = ml.subscriber_permissions | ml.account_permissions
         else:
             access = ml.account_permissions
     else:
