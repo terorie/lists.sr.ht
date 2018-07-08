@@ -5,6 +5,7 @@ from srht.config import cfg
 from srht.database import db
 from srht.flask import loginrequired
 from srht.validation import Validation
+from sqlalchemy import or_
 from listssrht.types import List, User, Email, Subscription
 import requests
 import re
