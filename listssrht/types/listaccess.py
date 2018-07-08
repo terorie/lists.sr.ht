@@ -10,6 +10,6 @@ class ListAccess(IntFlag):
     """Permission to subscribe and browse the archives"""
     reply = 2
     """Permission to reply to threads submitted by an authorized user."""
-    post = 3
+    post = 4
     """Permission to submit new threads."""
     all = browse | reply | post

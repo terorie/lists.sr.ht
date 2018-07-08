@@ -1,5 +1,7 @@
 import sqlalchemy as sa
 from srht.database import Base
+import base64
+import os
 
 class Subscription(Base):
     __tablename__ = 'subscription'
@@ -7,7 +9,6 @@ class Subscription(Base):
     created = sa.Column(sa.DateTime, nullable=False)
     updated = sa.Column(sa.DateTime, nullable=False)
     email = sa.Column(sa.Unicode(512))
-    confirmed = sa.Column(sa.Boolean, nullable=False, default=True)
 
     list_id = sa.Column(sa.Integer, sa.ForeignKey('list.id'), nullable=False)
     list = sa.orm.relationship('List', backref=sa.orm.backref('subscribers'))
