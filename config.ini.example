@@ -26,6 +26,14 @@ connection-string=postgresql://postgres@localhost/lists.sr.ht
 # The name of your network of sr.ht-based sites
 site-name=sr.ht
 
+[mail]
+#
+# SMTP settings for outgoing mail
+smtp-host=CHANGEME
+smtp-port=CHANGEME
+smtp-user=CHANGEME
+smtp-password=CHANGEME
+
 [network]
 #
 # Location of other sites in your network
@@ -39,12 +47,17 @@ builds=http://builds.sr.ht.local
 lists=http://lists.sr.ht.local
 todo=http://todo.sr.ht.local
 man=http://man.sr.ht.local
+dispatch=http://dispatch.sr.ht.local
 
 [meta.sr.ht]
-oauth-client-id=CHANGEME
-oauth-client-secret=CHANGEME
+oauth-client-id=3312905beddc2b3f
+oauth-client-secret=07cc502b5097808f30a9098925b45acb
 
 [lists]
+#
+# The domain that incoming email should be sent to. Forward mail sent here to
+# the LTMP socket.
+posting-domain=lists.localhost.localdomain
 #
 # Path for the lmtp daemon's unix socket. Direct incoming mail to this socket.
 sock=/tmp/lists.sr.ht-lmtp.sock
@@ -70,3 +83,6 @@ reject-mimetypes=text/html
 # Link to include in the rejection message where senders can get help
 # correcting their email.
 reject-url=https://man.sr.ht/lists.sr.ht/how-to-send.md
+#
+# Redis instance used by celery for dispatching email blast tasks
+redis=redis://localhost:6379/0
