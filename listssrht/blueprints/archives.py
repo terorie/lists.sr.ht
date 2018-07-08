@@ -159,3 +159,24 @@ def settings_POST(owner_name, list_name):
         return render_template("list-settings.html", list=ml, owner=owner,
                 access_type_list=ListAccess, access_help_map=access_help_map,
                 **valid.kwargs)
+
+    def process(perm):
+        bitfield = ListAccess.none
+        for access in ListAccess:
+            if access in [ListAccess.none]:
+                continue
+            print(valid.optional("perm_{}_{}".format(
+                    perm, access.name)))
+            if valid.optional("perm_{}_{}".format(
+                    perm, access.name)) != None:
+                bitfield |= access
+        return bitfield
+
+    ml.description = list_desc
+    ml.nonsubscriber_permissions = process("nonsub")
+    ml.account_permissions = process("account")
+
+    db.session.commit()
+
+    return redirect(url_for("archives.list",
+        owner_name=owner_name, list_name=list_name))
