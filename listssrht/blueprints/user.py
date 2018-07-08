@@ -38,12 +38,28 @@ def user_profile(username):
     r = requests.get(meta_uri + "/api/user/profile", headers={
         "Authorization": "token " + user.oauth_token
     }) # TODO: cache
+
     if r.status_code == 200:
         profile = r.json()
     else:
         profile = None
+
+    lists = List.query.filter(List.owner_id == user.id)
+
+    if current_user:
+        if current_user.id != user.id:
+            lists = lists.filter(or_(
+                    List.account_permissions > 0,
+                    List.nonsubscriber_permissions > 0
+                ))
+    else:
+        lists = lists.filter(List.nonsubscriber_permissions > 0)
+
+    lists = lists.order_by(List.updated.desc()).limit(10).all()
+
     return render_template("user.html",
-            user=user, recent=recent, profile=profile, parseaddr=parseaddr)
+            user=user, recent=recent, lists=lists,
+            profile=profile, parseaddr=parseaddr)
 
 @user.route("/lists/create")
 @loginrequired

@@ -100,7 +100,7 @@ def thread(owner_name, list_name, message_id):
 @loginrequired
 @archives.route("/<owner_name>/<list_name>/subscribe", methods=["POST"])
 def subscribe(owner_name, list_name):
-    owner, ml = get_list(owner_name, list_name)
+    owner, ml, access = get_list(owner_name, list_name)
     if not ml:
         abort(404)
     if ListAccess.browse not in access:
@@ -122,7 +122,7 @@ def subscribe(owner_name, list_name):
 @loginrequired
 @archives.route("/<owner_name>/<list_name>/unsubscribe", methods=["POST"])
 def unsubscribe(owner_name, list_name):
-    owner, ml = get_list(owner_name, list_name)
+    owner, ml, access = get_list(owner_name, list_name)
     if not ml:
         abort(404)
     sub = (Subscription.query
@@ -146,7 +146,7 @@ access_help_map = {
 @loginrequired
 @archives.route("/<owner_name>/<list_name>/settings")
 def settings_GET(owner_name, list_name):
-    owner, ml = get_list(owner_name, list_name)
+    owner, ml, access = get_list(owner_name, list_name)
     if not ml:
         abort(404)
     if ml.owner_id != current_user.id:
@@ -157,7 +157,7 @@ def settings_GET(owner_name, list_name):
 @loginrequired
 @archives.route("/<owner_name>/<list_name>/settings", methods=["POST"])
 def settings_POST(owner_name, list_name):
-    owner, ml = get_list(owner_name, list_name)
+    owner, ml, access = get_list(owner_name, list_name)
     if not ml:
         abort(404)
     if ml.owner_id != current_user.id:
