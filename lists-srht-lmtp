@@ -115,11 +115,6 @@ class MailHandler:
         external_perms = ListAccess(external_perms)
 
         mail = email.message_from_bytes(envelope.content)
-        err = self.validate(mail)
-        if err is not None:
-            print("Rejected due to validation errors")
-            return "500 Rejected. {} See {} for help.".format(
-                err, self.reject_url)
 
         in_reply_to = mail.get("In-Reply-To")
         in_reply_to = await self.fetch_email.fetchval(in_reply_to)
@@ -132,6 +127,12 @@ class MailHandler:
             print("Command accepted: {}".format(mail.get("Subject")))
             dispatch_message.delay(address, dest_id, str(mail))
             return "250 Message accepted for delivery"
+
+        err = self.validate(mail)
+        if err is not None:
+            print("Rejected due to validation errors")
+            return "500 Rejected. {} See {} for help.".format(
+                err, self.reject_url)
 
         if owner_id != user_id:
             sub = await self.fetch_subscription.fetchval(_from[1], user_id)
