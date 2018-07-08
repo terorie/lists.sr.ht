@@ -2,7 +2,8 @@ from flask import Blueprint, render_template, abort, request, redirect, url_for
 from flask_login import current_user
 from srht.database import db
 from srht.flask import paginate_query, loginrequired
-from listssrht.types import List, User, Email, Subscription
+from srht.validation import Validation
+from listssrht.types import List, User, Email, Subscription, ListAccess
 from sqlalchemy import or_
 import email
 import email.utils
@@ -116,3 +117,45 @@ def unsubscribe(owner_name, list_name):
         db.session.commit()
     return redirect(url_for("archives.list",
         owner_name=owner_name, list_name=list_name))
+
+access_help_map = {
+    ListAccess.browse:
+        "Permission to subscribe and browse the archives",
+    ListAccess.reply:
+        "Permission to reply to threads submitted by an authorized user.",
+    ListAccess.post:
+        "Permission to submit new threads."
+}
+
+@loginrequired
+@archives.route("/<owner_name>/<list_name>/settings")
+def settings_GET(owner_name, list_name):
+    owner, ml = get_list(owner_name, list_name)
+    if not ml:
+        abort(404)
+    if ml.owner_id != current_user.id:
+        abort(401)
+    return render_template("list-settings.html", list=ml, owner=owner,
+            access_type_list=ListAccess, access_help_map=access_help_map)
+
+@loginrequired
+@archives.route("/<owner_name>/<list_name>/settings", methods=["POST"])
+def settings_POST(owner_name, list_name):
+    owner, ml = get_list(owner_name, list_name)
+    if not ml:
+        abort(404)
+    if ml.owner_id != current_user.id:
+        abort(401)
+
+    valid = Validation(request)
+    list_desc = valid.optional("list_desc")
+    if list_desc == "":
+        list_desc = None
+    valid.expect(not list_desc or 16 < len(list_desc) < 2048,
+            "Description must be between 16 and 2048 characters.",
+            field="list_desc")
+
+    if not valid.ok:
+        return render_template("list-settings.html", list=ml, owner=owner,
+                access_type_list=ListAccess, access_help_map=access_help_map,
+                **valid.kwargs)

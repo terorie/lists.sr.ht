@@ -67,7 +67,8 @@ def create_list_POST():
     valid.expect(not existing,
             "This name is already in use.", field="list_name")
     valid.expect(not list_desc or 16 < len(list_desc) < 2048,
-            "Description must be between 16 and 2048 characters.")
+            "Description must be between 16 and 2048 characters.",
+            field="list_desc")
     if not valid.ok:
         return render_template("create.html", **valid.kwargs)
 
