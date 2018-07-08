@@ -17,33 +17,56 @@
             list_name=ml.name) }}"
         >{{ ml.name }}</a>
       </h2>
+      {% if ml.description %}
       <p>
         {{ ml.description | md }}
       </p>
+      {% endif %}
     </div>
     <div class="col-md-8">
       {% macro display_message(msg) %}
       {% set stripped_subject =
-        msg.subject[4:] if msg.subject.upper().startswith("RE: ") else msg.subject %}
-      {% if msg == thread or stripped_subject != thread.subject %}
+        msg.subject[4:] if (msg.subject
+          .upper().startswith("RE: ")) else msg.subject %}
+      {% if msg == thread %}
+      <small class="text-muted pull-right" style="line-height: 2">
+        {% if msg.nreplies > 0 %}
+        <span>
+          <i class="fa fa-reply"></i>
+          {{msg.nreplies}}
+        </span>
+        {% endif %}
+        {% if msg.nparticipants > 1 %}
+        <span>
+          <i class="fa fa-user"></i>
+          {{msg.nparticipants}}
+        </span>
+        {% endif %}
+        <span>
+          <i class="fa fa-clock-o"></i> {{ msg.updated | date }}
+        </span>
+      </small>
+      <h3>
+        {{ msg.subject }}
+      </h3>
+      {% elif stripped_subject != thread.subject %}
       <h3>{{ msg.subject }}</h3>
       {% endif %}
       <div>
         <p>
+          {% set from_hdr = msg.parsed()['From'] %}
+          {% set from = parseaddr(from_hdr) %}
           {% if msg.sender != None %}
           <a href="/{{ msg.sender.canonical_name() }}">
-            {{ msg.sender.canonical_name() }}
+            {{from[0]}}
           </a>
           {% else %}
-          {% if current_user %}
-          <a href="mailto:{{
-              msg.parsed().get('From')
-            }}&in-reply-to={{
-              quote(msg.message_id)
-            }}">{{ msg.parsed().get('From') }}</a>
-          {% else %}
-          {{ parseaddr(msg.parsed().get('From'))[0] }}
+          {{from[0]}}
           {% endif %}
+          {% if current_user %}
+          <a
+            href="mailto:{{from_hdr}}&in-reply-to={{quote(msg.message_id)}}"
+          >&lt;{{ from[1] }}&gt;</a>
           {% endif %}
           <a
             id="{{ msg.message_id }}"
