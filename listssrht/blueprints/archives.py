@@ -15,12 +15,22 @@ def get_list(owner_name, list_name):
         owner_name = owner_name[1:]
         owner = User.query.filter(User.username == owner_name).one_or_none()
         if not owner:
-            return None, None
+            return None, None, None
     else:
         # TODO: orgs
-        return None, None
+        return None, None, None
     ml = List.query.filter(List.name == list_name).one_or_none()
-    return owner, ml
+    if current_user:
+        if current_user.id == ml.owner_id:
+            access = ListAccess.all
+        elif (Subscription.query
+                .filter(Subscription.user_id == current_user.id)).count():
+            access = ml.subscriber_permissions
+        else:
+            access = ml.account_permissions
+    else:
+        access = ml.nonsubscriber_permissions
+    return owner, ml, access
 
 def apply_search(query):
     search = request.args.get("search")
@@ -41,9 +51,11 @@ def apply_search(query):
 
 @archives.route("/<owner_name>/<list_name>")
 def list(owner_name, list_name):
-    owner, ml = get_list(owner_name, list_name)
+    owner, ml, access = get_list(owner_name, list_name)
     if not ml:
         abort(404)
+    if ListAccess.browse not in access:
+        abort(401)
     threads = (Email.query
             .filter(Email.list_id == ml.id)
             .filter(Email.parent_id == None)
@@ -63,9 +75,11 @@ def list(owner_name, list_name):
 
 @archives.route("/<owner_name>/<list_name>/<message_id>")
 def thread(owner_name, list_name, message_id):
-    owner, ml = get_list(owner_name, list_name)
+    owner, ml, access = get_list(owner_name, list_name)
     if not ml:
         abort(404)
+    if ListAccess.browse not in access:
+        abort(401)
     thread = (Email.query
             .filter(Email.message_id == message_id)
             .filter(Email.list_id == ml.id)
@@ -89,6 +103,8 @@ def subscribe(owner_name, list_name):
     owner, ml = get_list(owner_name, list_name)
     if not ml:
         abort(404)
+    if ListAccess.browse not in access:
+        abort(401)
     sub = (Subscription.query
         .filter(Subscription.list_id == ml.id)
         .filter(Subscription.user_id == current_user.id)).one_or_none()
