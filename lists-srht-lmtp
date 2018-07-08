@@ -4,6 +4,7 @@ from email.utils import parseaddr
 from fnmatch import fnmatch
 from grp import getgrnam
 from srht.config import load_config, cfg
+from listssrht.types.listaccess import ListAccess
 import asyncio
 import asyncpg
 import email
@@ -34,13 +35,17 @@ class MailHandler:
         self.fetch_list = await self.pg.prepare(
                 '''SELECT
                        "id",
-                       "allow_nonsubscriber_postings",
-                       "allow_external_postings"
+                       "nonsubscriber_permissions",
+                       "account_permissions"
                    FROM "list"
                    WHERE "owner_id" = $1 AND "name" = $2''')
         self.fetch_subscription = await self.pg.prepare(
                 '''SELECT "id" FROM "subscription"
-                   WHERE email = $1 or user_id = $2''')
+                   WHERE (email IS NOT NULL AND email = $1) or
+                         (user_id IS NOT NULL AND user_id = $2)''')
+        self.fetch_email = await self.pg.prepare(
+                '''SELECT "list_id" FROM "email"
+                   WHERE "message_id" = $1''')
 
     async def lookup_destination(self, address):
         """Looks up the list this message is addressed to and returns its ID."""
@@ -97,26 +102,33 @@ class MailHandler:
             print("Rejected, mailing list not found")
             return "550 The mailing list you requested does not exist."
         dest, nonsub, external = dest
+        nonsub = ListAccess(nonsub)
+        external = ListAccess(external)
+
         mail = email.message_from_bytes(envelope.content)
         err = self.validate(mail)
         if err is not None:
             print("Rejected due to validation errors")
             return "500 Rejected. {} See {} for help.".format(
                 err, self.reject_url)
+
+        in_reply_to = mail.get("In-Reply-To")
+        in_reply_to = await self.fetch_email.fetchval(in_reply_to)
+        access = ListAccess.reply if in_reply_to == dest else ListAccess.post
+
         _from = parseaddr(mail["From"])
         user_id = await self.fetch_user_by_email.fetchval(_from[1])
-        if not nonsub:
+
+        if access not in nonsub:
             sub = await self.fetch_subscription.fetchval(_from[1], user_id)
             if not sub:
                 print("Rejected: non-subscribers are not allowed to post")
-                return ("500 Rejected. " +
-                    "Non-subscribers are not allowed to post to this list.")
-        if not external:
-            if not user_id:
-                print("Rejected: non-users are not allowed to post")
-                return ("500 Rejected. " +
-                    "Users without an account are not allowed " +
-                    "to post to this list.")
+                return "500 Rejected. Non-subscribers are not allowed to post to this list."
+
+        if access not in external and not user_id:
+            print("Rejected: non-users are not allowed to post")
+            return "500 Rejected. Users without an account are not allowed to post to this list."
+
         print("Message accepted: {}".format(mail.get("Subject")))
         dispatch_message.delay(dest, str(mail))
         return "250 Message accepted for delivery"
