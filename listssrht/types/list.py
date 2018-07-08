@@ -1,5 +1,21 @@
-import sqlalchemy as sa
+from enum import IntFlag
 from srht.database import Base
+from srht.flagtype import FlagType
+import sqlalchemy as sa
+
+class ListAccess(IntFlag):
+    """
+    Permissions granted to users of a list.
+    """
+    none = 0
+    """Grant no access to this list."""
+    browse = 1
+    """Permission to subscribe and browse the archives"""
+    reply = 2
+    """Permission to reply to threads submitted by an authorized user."""
+    post = 3
+    """Permission to submit new threads."""
+    all = browse | reply | post
 
 class List(Base):
     __tablename__ = 'list'
@@ -9,19 +25,16 @@ class List(Base):
     name = sa.Column(sa.String(128), nullable=False)
     description = sa.Column(sa.Unicode(2048))
 
-    allow_nonsubscriber_postings = sa.Column(sa.Boolean,
-            nullable=False,
-            server_default='true')
+    nonsubscriber_permissions = sa.Column(FlagType(ListAccess),
+            nullable=False, server_default=str(ListAccess.all.value))
     """
-    When true, allow postings to this mailing list from senders who are not
-    subscribed to the list.
+    Permissions granted to users who are not subscribed or logged in.
     """
-    allow_external_postings = sa.Column(sa.Boolean,
-            nullable=False,
-            server_default='true')
+
+    account_permissions = sa.Column(FlagType(ListAccess),
+            nullable=False, server_default=str(ListAccess.all.value))
     """
-    When true, allow postings to this mailing list from senders who do not have
-    sr.ht accounts.
+    Permissions granted to logged in holders of sr.ht accounts.
     """
 
     owner_id = sa.Column(sa.Integer, sa.ForeignKey('user.id'), nullable=False)
