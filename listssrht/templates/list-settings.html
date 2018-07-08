@@ -15,7 +15,12 @@
       type="checkbox"
       name="perm_{{ name }}_{{ type.name }}"
       value="{{type.value}}"
-      {{ "checked" if type in perms }}> {{type.name}}
+      {% if type.name == "browse" and name == "sub" %}
+      disabled checked
+      {% else %}
+      {{ "checked" if type in perms }}
+      {% endif %}
+    > {{type.name}}
   {% else %}
     <input
       class="form-check-input"
@@ -80,6 +85,16 @@
               {{ perm_checkbox(a, list.nonsubscriber_permissions , "nonsub") }}
               {% endfor %}
               {{ valid.summary("list_nonsubscriber_access") }}
+            </div>
+            <div class="event">
+              <h4>Subscriber Permissions</h4>
+              <p>
+                Permissions granted to users who are subscribed to the list.
+              </p>
+              {% for a in access_type_list %}
+              {{ perm_checkbox(a, list.subscriber_permissions , "sub") }}
+              {% endfor %}
+              {{ valid.summary("list_subscriber_access") }}
             </div>
             <div class="event">
               <h4>Account Holder Permissions</h4>

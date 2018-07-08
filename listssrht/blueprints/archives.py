@@ -172,6 +172,7 @@ def settings_POST(owner_name, list_name):
 
     ml.description = list_desc
     ml.nonsubscriber_permissions = process("nonsub")
+    ml.subscriber_permissions = process("sub")
     ml.account_permissions = process("account")
 
     db.session.commit()

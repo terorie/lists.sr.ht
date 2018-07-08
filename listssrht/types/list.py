@@ -17,10 +17,16 @@ class List(Base):
     Permissions granted to users who are not subscribed or logged in.
     """
 
+    subscriber_permissions = sa.Column(FlagType(ListAccess),
+            nullable=False, server_default=str(ListAccess.all.value))
+    """
+    Permissions granted to users who are subscribed to the list.
+    """
+
     account_permissions = sa.Column(FlagType(ListAccess),
             nullable=False, server_default=str(ListAccess.all.value))
     """
-    Permissions granted to logged in holders of sr.ht accounts.
+    Permissions granted to holders of sr.ht accounts.
     """
 
     owner_id = sa.Column(sa.Integer, sa.ForeignKey('user.id'), nullable=False)

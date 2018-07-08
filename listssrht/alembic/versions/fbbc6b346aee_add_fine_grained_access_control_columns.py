@@ -17,7 +17,7 @@ from enum import IntFlag
 class ListAccess(IntFlag):
     browse = 1
     reply = 2
-    post = 3
+    post = 4
     all = browse | reply | post
 
 def upgrade():
