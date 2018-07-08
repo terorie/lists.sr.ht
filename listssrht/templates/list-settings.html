@@ -16,7 +16,7 @@
       name="perm_{{ name }}_{{ type.name }}"
       value="{{type.value}}"
       {% if type.name == "browse" and name == "sub" %}
-      disabled checked
+      readonly checked
       {% else %}
       {{ "checked" if type in perms }}
       {% endif %}
