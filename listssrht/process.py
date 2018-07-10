@@ -33,6 +33,10 @@ def _forward(dest, mail):
     list_name = "{}/{}".format(dest.owner.canonical_name(), dest.name)
     list_unsubscribe = list_name + "+unsubscribe@" + domain
     list_subscribe = list_name + "+subscribe@" + domain
+    for overwrite in ["List-Unsubscribe", "List-Subscribe", "List-Archive",
+                "List-Post", "List-ID", "Sender"]:
+        del mail[overwrite]
+
     mail["List-Unsubscribe"] = (
             "<mailto:{}?subject=unsubscribe>".format(list_unsubscribe))
     mail["List-Subscribe"] = (
