@@ -132,6 +132,7 @@ Feel free to reply to this email if you have any questions.""".format(
                 cfg("lists", "posting-domain")))
         sub = Subscription()
         sub.user_id = user.id if user else None
+        sub.list_id = dest.id
         sub.email = sender[1] if not user else None
         db.session.add(sub)
     else:
