@@ -95,6 +95,7 @@ def _archive(dest, envelope):
         mail.sender_id = sender.id
     db.session.add(mail)
     db.session.commit()
+    print("Archived {} with ID {}".format(mail.subject, mail.id))
 
 def _subscribe(dest, mail):
     sender = email.utils.parseaddr(mail["From"])
