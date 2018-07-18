@@ -103,10 +103,12 @@ def _subscribe(dest, mail):
     if user:
         perms = dest.account_permissions
         sub = Subscription.query.filter(
+            Subscription.list_id == dest.id,
             Subscription.user_id == user.id).one_or_none()
     else:
         perms = dest.nonsubscriber_permissions
         sub = Subscription.query.filter(
+            Subscription.list_id == dest.id,
             Subscription.email == sender[1]).one_or_none()
 
     list_addr = dest.owner.canonical_name() + "/" + dest.name
@@ -172,9 +174,11 @@ def _unsubscribe(dest, mail):
     user = User.query.filter(User.email == sender[1]).one_or_none()
     if user:
         sub = Subscription.query.filter(
+            Subscription.list_id == dest.id,
             Subscription.user_id == user.id).one_or_none()
     else:
         sub = Subscription.query.filter(
+            Subscription.list_id == dest.id,
             Subscription.email == sender[1]).one_or_none()
     list_addr = dest.owner.canonical_name() + "/" + dest.name
     message = None
