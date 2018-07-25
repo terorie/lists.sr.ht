@@ -56,7 +56,8 @@ def _forward(dest, mail):
         if sub.user:
             to = sub.user.email
         print("Forwarding message to " + to)
-        smtp.sendmail(smtp_user, [to], mail.as_string(unixfrom=True))
+        smtp.sendmail(smtp_user, [to], mail.as_string(
+            unixfrom=True, maxheaderlen=998))
     smtp.quit()
 
 def _archive(dest, envelope):
@@ -66,7 +67,7 @@ def _archive(dest, envelope):
     mail.headers = json.dumps({
         key: value for key, value in envelope.items()
     })
-    mail.envelope = str(envelope)
+    mail.envelope = envelope.as_string(unixfrom=True, maxheaderlen=998)
     with io.StringIO(mail.envelope) as f:
         patch = PatchSet(f)
     mail.is_patch = len(patch) > 0
