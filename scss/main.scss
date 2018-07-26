@@ -13,9 +13,14 @@
   line-height: 2;
 }
 
+blockquote {
+  border-top: 2px solid #888;
+  margin-left: 1rem;
+  padding-top: 0.25rem;
+}
+
 .message-header {
   display: grid;
-  //width: 100%;
   margin-bottom: 0.5rem;
   grid-template-columns: 5fr auto auto;
   grid-template-rows: 1fr auto;
