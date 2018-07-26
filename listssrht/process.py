@@ -16,6 +16,7 @@ import io
 import json
 import smtplib
 from celery import Celery
+from datetime import datetime
 from email import policy
 from email.mime.text import MIMEText
 from email.utils import make_msgid 
@@ -233,6 +234,7 @@ def dispatch_message(address, list_id, mail):
         if not msgid or Email.query.filter(Email.message_id == msgid).count():
             print("Dropping email due to duplicate message ID")
             return
+        desg.updated = datetime.utcnow()
         _archive(dest, mail)
         _forward(dest, mail)
     elif command == "subscribe":
