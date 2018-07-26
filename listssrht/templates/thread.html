@@ -99,7 +99,7 @@
 
         {% if len(msg.replies) > 1 %}
         {% for child in msg.replies %}
-        <blockquote>
+        <blockquote class="tree">
         {{ display_message(child) }}
         </blockquote>
         {% endfor %}
