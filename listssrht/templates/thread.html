@@ -49,52 +49,55 @@
       {% elif stripped_subject != thread.subject %}
       <h3>{{ msg.subject }}</h3>
       {% endif %}
-      <div>
-        <div class="message-header">
-          <div class="from">
-            {% set from_hdr = msg.parsed()['From'] %}
-            {% set from = parseaddr(from_hdr) %}
-            {% if msg.sender != None %}
-            <a href="/{{ msg.sender.canonical_name() }}">
+      <details class="message-details" open>
+        <summary>
+          <div class="message-header">
+            <div class="from">
+              {% set from_hdr = msg.parsed()['From'] %}
+              {% set from = parseaddr(from_hdr) %}
+              {% if msg.sender != None %}
+              <a href="/{{ msg.sender.canonical_name() }}">
+                {{from[0]}}
+              </a>
+              {% else %}
               {{from[0]}}
-            </a>
-            {% else %}
-            {{from[0]}}
-            {% endif %}
-            {% if current_user %}
-            <a
-              href="mailto:{{from_hdr}}&in-reply-to={{quote(msg.message_id)}}"
-            >&lt;{{ from[1] }}&gt;</a>
-            {% endif %}
-          </div>
-          <details>
-            <summary>Details</summary>
-            <div>
-              <dl>
-                <dt>Message ID</dt>
-                <dd><code>{{ msg.message_id }}</code></dd>
-                {% if msg.parent_id %}
-                <dt>In-Reply-To</dt>
-                <dd><code>{{ msg.parent.message_id }}</code></dd>
-                {% endif %}
-              </dl>
+              {% endif %}
               {% if current_user %}
-              <a href="{{ url_for(".raw",
-                  owner_name=ml.owner.canonical_name(),
-                  list_name=ml.name,
-                  message_id=msg.message_id
-                ) }}" target="_blank">Download raw message</a>
+              <a
+                href="mailto:{{from_hdr}}&in-reply-to={{quote(msg.message_id)}}"
+              >&lt;{{ from[1] }}&gt;</a>
               {% endif %}
             </div>
-          </details>
-          <div class="date">
-            <a
-              id="{{ msg.message_id }}"
-              href="#{{ msg.message_id }}"
-              class="text-muted"
-            >{{ msg.created | date }}</a>
+            <details>
+              <summary>Details</summary>
+              <div>
+                <dl>
+                  <dt>Message ID</dt>
+                  <dd><code>{{ msg.message_id }}</code></dd>
+                  {% if msg.parent_id %}
+                  <dt>In-Reply-To</dt>
+                  <dd><code>{{ msg.parent.message_id }}</code></dd>
+                  {% endif %}
+                </dl>
+                {% if current_user %}
+                <a href="{{ url_for(".raw",
+                    owner_name=ml.owner.canonical_name(),
+                    list_name=ml.name,
+                    message_id=msg.message_id
+                  ) }}" target="_blank">Download raw message</a>
+                {% endif %}
+              </div>
+            </details>
+            <div class="date">
+              <a
+                id="{{ msg.message_id }}"
+                href="#{{ msg.message_id }}"
+                class="text-muted"
+              >{{ msg.created | date }}</a>
+            </div>
           </div>
-        </div>
+        </summary>
+
         <pre>{{ msg.body }}</pre>
 
         {% if len(msg.replies) > 1 %}
@@ -104,7 +107,7 @@
         </blockquote>
         {% endfor %}
         {% endif %}
-      </div>
+      </details>
 
       {% if len(msg.replies) <= 1 %}
       {% for child in msg.replies %}

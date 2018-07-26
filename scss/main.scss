@@ -19,6 +19,21 @@ blockquote {
   padding-top: 0.25rem;
 }
 
+.message-details {
+  & > summary {
+    list-style: none;
+    &::-webkit-details-marker {
+      display: none;
+    }
+  }
+
+  &:not([open]) {
+    details {
+      display: none;
+    }
+  }
+}
+
 .message-header {
   display: grid;
   margin-bottom: 0.5rem;
@@ -37,7 +52,7 @@ blockquote {
   }
 
   details {
-    margin-right: 0.5rem;
+    margin-right: 1rem;
     display: inline;
     grid-area: details-collapsed;
 
