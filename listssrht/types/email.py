@@ -1,5 +1,6 @@
 import email
 import sqlalchemy as sa
+from email import policy
 from srht.database import Base
 
 class Email(Base):
@@ -48,5 +49,6 @@ class Email(Base):
     def parsed(self):
         if hasattr(self, "_parsed"):
             return self._parsed
-        self._parsed = email.message_from_string(self.envelope)
+        self._parsed = email.message_from_string(
+                self.envelope, policy=policy.default)
         return self._parsed
