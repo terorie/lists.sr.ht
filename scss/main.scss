@@ -12,3 +12,55 @@
 
   line-height: 2;
 }
+
+.message-header {
+  display: grid;
+  //width: 100%;
+  margin-bottom: 0.5rem;
+  grid-template-columns: 5fr auto auto;
+  grid-template-rows: 1fr auto;
+  grid-template-areas:
+    "from details-collapsed date"
+    "details details details";
+
+  .from {
+    grid-area: from;
+  }
+
+  .date {
+    grid-area: date;
+  }
+
+  details {
+    margin-right: 0.5rem;
+    display: inline;
+    grid-area: details-collapsed;
+
+    summary {
+      color: $text-muted;
+    }
+
+    &[open] {
+      grid-area: details;
+      padding: 0 3rem;
+      margin-right: 0;
+
+      summary {
+        color: inherit;
+      }
+
+      & > div {
+        padding-left: 0.5rem;
+        background: #f5f5f5;
+      }
+
+      dl {
+        margin: 0;
+      }
+
+      dd {
+        margin-bottom: 0;
+      }
+    }
+  }
+}
