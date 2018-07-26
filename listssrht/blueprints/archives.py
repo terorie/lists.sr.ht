@@ -1,4 +1,5 @@
 from flask import Blueprint, render_template, abort, request, redirect, url_for
+from flask import Response
 from flask_login import current_user
 from srht.database import db
 from srht.flask import paginate_query, loginrequired
@@ -98,6 +99,21 @@ def thread(owner_name, list_name, message_id):
             ml=ml,
             thread=thread,
             parseaddr=email.utils.parseaddr)
+
+@archives.route("/<owner_name>/<list_name>/<message_id>/raw")
+def raw(owner_name, list_name, message_id):
+    owner, ml, access = get_list(owner_name, list_name)
+    if not ml:
+        abort(404)
+    if ListAccess.browse not in access:
+        abort(401)
+    message = (Email.query
+            .filter(Email.message_id == message_id)
+            .filter(Email.list_id == ml.id)
+        ).one_or_none()
+    if not message:
+        abort(404)
+    return Response(message.envelope, mimetype='text/plain')
 
 @loginrequired
 @archives.route("/<owner_name>/<list_name>/subscribe", methods=["POST"])
