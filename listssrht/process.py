@@ -234,7 +234,7 @@ def dispatch_message(address, list_id, mail):
         if not msgid or Email.query.filter(Email.message_id == msgid).count():
             print("Dropping email due to duplicate message ID")
             return
-        desg.updated = datetime.utcnow()
+        dest.updated = datetime.utcnow()
         _archive(dest, mail)
         _forward(dest, mail)
     elif command == "subscribe":
