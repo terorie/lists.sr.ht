@@ -78,13 +78,11 @@
                 <dd><code>{{ msg.parent.message_id }}</code></dd>
                 {% endif %}
               </dl>
-              {% if current_user %}
               <a href="{{ url_for(".raw",
                   owner_name=ml.owner.canonical_name(),
                   list_name=ml.name,
                   message_id=msg.message_id
                 ) }}" target="_blank">Download raw message</a>
-              {% endif %}
             </div>
           </details>
           <div class="date">
