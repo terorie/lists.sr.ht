@@ -20,7 +20,10 @@ def get_list(owner_name, list_name):
     else:
         # TODO: orgs
         return None, None, None
-    ml = List.query.filter(List.name == list_name).one_or_none()
+    ml = (List.query
+            .filter(List.name == list_name)
+            .filter(List.owner_id == owner.id)
+        ).one_or_none()
     if not ml:
         return None, None, None
     if current_user:
