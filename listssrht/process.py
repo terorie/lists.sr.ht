@@ -54,9 +54,10 @@ def _forward(dest, mail):
     smtp.starttls()
     smtp.login(smtp_user, smtp_password)
 
+    froms = mail.get_all('From', [])
     tos = mail.get_all('To', [])
     ccs = mail.get_all('Cc', [])
-    recipients = set([a[1] for a in getaddresses(tos + ccs)])
+    recipients = set([a[1] for a in getaddresses(froms + tos + ccs)])
 
     for sub in dest.subscribers:
         to = sub.email
