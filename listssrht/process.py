@@ -86,7 +86,13 @@ def _archive(dest, envelope):
         mail.is_patch = False
     mail.is_request_pull = False # TODO: Detect git request-pull
     mail.list_id = dest.id
-    mail.body = envelope.get_payload(decode=True).decode()
+    for part in envelope.walk():
+        content_type = part.get_content_type()
+        # TODO: Verify signed emails
+        if content_type == 'text/plain':
+            # TODO: should we consider multiple text parts?
+            mail.body = part.get_payload(decode=True).decode()
+            break
     reply_to = envelope["In-Reply-To"]
     parent = Email.query.filter(Email.message_id == reply_to).one_or_none()
     if parent is not None:
