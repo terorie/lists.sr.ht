@@ -78,9 +78,12 @@ def _archive(dest, envelope):
         key: value for key, value in envelope.items()
     })
     mail.envelope = envelope.as_string(unixfrom=True, maxheaderlen=998)
-    with io.StringIO(mail.envelope) as f:
-        patch = PatchSet(f)
-    mail.is_patch = len(patch) > 0
+    try:
+        with io.StringIO(mail.envelope) as f:
+            patch = PatchSet(f)
+        mail.is_patch = len(patch) > 0
+    except:
+        mail.is_patch = False
     mail.is_request_pull = False # TODO: Detect git request-pull
     mail.list_id = dest.id
     mail.body = envelope.get_payload(decode=True).decode()
