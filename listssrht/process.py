@@ -19,7 +19,7 @@ from celery import Celery
 from datetime import datetime
 from email import policy
 from email.mime.text import MIMEText
-from email.utils import make_msgid 
+from email.utils import parseaddr, getaddresses
 from unidiff import PatchSet
 
 dispatch = Celery("lists.sr.ht", broker=cfg("lists", "redis"))
@@ -47,15 +47,24 @@ def _forward(dest, mail):
     mail["List-Post"] = "<mailto:{}@{}>".format(list_name, domain)
     mail["List-ID"] = "{} <{}@{}>".format(dest.name, list_name, domain)
     mail["Sender"] = "{} <{}@{}>".format(list_name, list_name, domain)
+
     # TODO: Encrypt emails
     smtp = smtplib.SMTP(smtp_host, smtp_port)
     smtp.ehlo()
     smtp.starttls()
     smtp.login(smtp_user, smtp_password)
+
+    tos = mail.get_all('To', [])
+    ccs = mail.get_all('Cc', [])
+    recipients = set([a[1] for a in getaddresses(tos + ccs)])
+
     for sub in dest.subscribers:
         to = sub.email
         if sub.user:
             to = sub.user.email
+        if to in recipients:
+            print(to + " is already copied, skipping")
+            continue
         print("Forwarding message to " + to)
         smtp.sendmail(smtp_user, [to], mail.as_string(
             unixfrom=True, maxheaderlen=998))
@@ -91,7 +100,7 @@ def _archive(dest, envelope):
         thread.nparticipants = len(participants)
     # TODO: Enumerate CC's and create SQL relationships for them
     # TODO: Some users will have many email addresses
-    sender = email.utils.parseaddr(envelope["From"])
+    sender = parseaddr(envelope["From"])
     sender = User.query.filter(User.email == sender[1]).one_or_none()
     if sender:
         mail.sender_id = sender.id
@@ -100,7 +109,7 @@ def _archive(dest, envelope):
     print("Archived {} with ID {}".format(mail.subject, mail.id))
 
 def _subscribe(dest, mail):
-    sender = email.utils.parseaddr(mail["From"])
+    sender = parseaddr(mail["From"])
     user = User.query.filter(User.email == sender[1]).one_or_none()
     if user:
         perms = dest.account_permissions
@@ -172,7 +181,7 @@ Feel free to reply to this email if you have any questions.""".format(
     db.session.commit()
 
 def _unsubscribe(dest, mail):
-    sender = email.utils.parseaddr(mail["From"])
+    sender = parseaddr(mail["From"])
     user = User.query.filter(User.email == sender[1]).one_or_none()
     if user:
         sub = Subscription.query.filter(
