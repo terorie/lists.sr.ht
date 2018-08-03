@@ -77,6 +77,7 @@ def list(owner_name, list_name):
 
     return render_template("archive.html",
             owner=owner, ml=ml, threads=threads,
+            access=access, ListAccess=ListAccess,
             search=search, subscription=subscription, **pagination)
 
 @archives.route("/<owner_name>/<list_name>/<message_id>")
