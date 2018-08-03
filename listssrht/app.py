@@ -52,7 +52,8 @@ class LoginApp(SrhtFlask):
         user.oauth_token = exchange["token"]
         user.oauth_token_expires = exchange["expires"]
         user.oauth_token_scopes = scopes
-        user.generate_session()
+        if user.session is None:
+            user.generate_session()
         db.session.commit()
         return user
 
