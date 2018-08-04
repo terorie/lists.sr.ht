@@ -84,31 +84,71 @@ def list(owner_name, list_name):
 def format_patch(msg):
     text = Markup("")
     is_diff = False
+
+    # Predict the starting lines of each file name
+    patch = msg.patch()
+    file_lines = {
+        " {} ".format(f.path): f
+        for f in patch.added_files + patch.modified_files + patch.removed_files
+    }
+
     for line in msg.body.replace("\r", "").split("\n"):
-        if line.startswith("diff"):
-            is_diff = True
         if not is_diff:
-            text += escape(line + "\n")
-            continue
-        if line.strip() == "--":
-            text += escape(line + "\n")
-        elif line.startswith("+++") or line.startswith("---"):
-            text += (
-                Markup("<span class='text-info'>")
-                    + escape(line)
-                + Markup("</span>\n"))
-        elif line.startswith("+"):
-            text += (
-                Markup("<span class='text-success'>")
-                    + escape(line)
-                + Markup("</span>\n"))
-        elif line.startswith("-"):
-            text += (
-                Markup("<span class='text-danger'>")
-                    + escape(line)
-                + Markup("</span>\n"))
+            f = next((
+                key for key in file_lines.keys() if line.startswith(key)
+            ), None)
+            if f != None:
+                f = file_lines[f]
+                text += Markup(" <a href='#{}'>{}</a>".format(
+                    msg.message_id + "+" + f.path, f.path))
+                try:
+                    stat = line[line.rindex(" ") + 1:]
+                    line = line[:line.rindex(" ") + 1]
+                    if "+" in stat and "-" in stat:
+                        removed = stat[stat.index("-"):]
+                        added = stat[:stat.index("-")]
+                        stat = Markup(("<span class='text-success'>{}</span>" +
+                            "<span class='text-danger'>{}</span>"
+                        ).format(added, removed))
+                    else:
+                        stat = escape(stat)
+                except ValueError:
+                    stat = Markup("")
+                text += escape(line[len(f.path) + 1:])
+                text += escape(stat)
+                text += Markup("\n")
+            else:
+                text += escape(line + "\n")
+            if line.startswith("diff"):
+                is_diff = True
         else:
-            text += escape(line + "\n")
+            if line.strip() == "--":
+                text += escape(line + "\n")
+            elif line.startswith("---"):
+                path = line[4:].lstrip("a/")
+                text += (
+                    Markup("<a href='{0}' id='{0}' class='text-info'>".format(
+                            msg.message_id + "+" + path
+                        ))
+                        + escape(line)
+                    + Markup("</a>\n"))
+            elif line.startswith("+++"):
+                text += (
+                    Markup("<span class='text-info'>")
+                        + escape(line)
+                    + Markup("</span>\n"))
+            elif line.startswith("+"):
+                text += (
+                    Markup("<span class='text-success'>")
+                        + escape(line)
+                    + Markup("</span>\n"))
+            elif line.startswith("-"):
+                text += (
+                    Markup("<span class='text-danger'>")
+                        + escape(line)
+                    + Markup("</span>\n"))
+            else:
+                text += escape(line + "\n")
     return text.rstrip()
 
 def format_body(msg):
