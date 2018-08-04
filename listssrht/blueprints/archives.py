@@ -109,15 +109,15 @@ def format_patch(msg):
                         added = stat[:stat.index("-")]
                         stat = Markup(("<span class='text-success'>{}</span>" +
                             "<span class='text-danger'>{}</span>"
-                        ).format(added, removed))
+                        ).format(escape(added), escape(removed)))
                     elif "-" in stat:
                         stat = Markup(
                                 "<span class='text-danger'>{}</span>".format(
-                                    stat))
+                                    escape(stat)))
                     elif "+" in stat:
                         stat = Markup(
                                 "<span class='text-success'>{}</span>".format(
-                                    stat))
+                                    escape(stat)))
                     else:
                         stat = escape(stat)
                 except ValueError:
