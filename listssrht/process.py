@@ -165,7 +165,7 @@ Feel free to reply to this email if you have any questions.""".format(
         db.session.add(sub)
     else:
         reply = MIMEText("""Hi {}!
-        
+
 We got an email asking to subscribe you to the {} mailing list. However, it
 looks like you're already subscribed. To unsubscribe, send an email to:
 
@@ -213,7 +213,7 @@ please reply to this email for support.""".format(
     else:
         db.session.delete(sub)
         reply = MIMEText("""Hi {}!
-        
+
 You have been successfully unsubscribed from the {} mailing list. If you wish to
 re-subscribe, send an email to:
 
