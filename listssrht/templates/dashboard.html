@@ -19,6 +19,20 @@
           <i class="fa fa-caret-right"></i>
         </a>
       </p>
+      {% if any(subs) %}
+      {% for list in subs %}
+      <div style="margin-top: 1rem">
+        <h4>
+          <a href="{{ url_for("archives.list",
+              owner_name=list.owner.canonical_name(),
+              list_name=list.name
+            ) }}"
+          >{{list.owner.canonical_name()}}/{{list.name}}</a>
+        </h4>
+        <span class="text-muted">Last active {{ list.updated | date }}</span>
+      </div>
+      {% endfor %}
+      {% endif %}
     </div>
     <div class="col-md-8">
       {% if any(recent) %}

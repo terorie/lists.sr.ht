@@ -26,7 +26,11 @@ def index():
             .filter(Subscription.list_id == List.id)
             .filter(Subscription.user_id == current_user.id)
             .order_by(Email.created.desc())).limit(10).all()
-    return render_template("dashboard.html", recent=recent)
+    subs = [sub.list for sub in (Subscription.query
+            .join(List)
+            .filter(Subscription.user_id == current_user.id)
+            .order_by(List.updated.desc())).limit(10).all()]
+    return render_template("dashboard.html", recent=recent, subs=subs)
 
 @user.route("/~<username>")
 def user_profile(username):
