@@ -127,7 +127,7 @@ def format_patch(msg):
             elif line.startswith("---"):
                 path = line[4:].lstrip("a/")
                 text += (
-                    Markup("<a href='{0}' id='{0}' class='text-info'>".format(
+                    Markup("<a href='#{0}' id='{0}' class='text-info'>".format(
                             msg.message_id + "+" + path
                         ))
                         + escape(line)
