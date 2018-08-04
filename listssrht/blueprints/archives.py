@@ -92,7 +92,9 @@ def format_patch(msg):
         for f in patch.added_files + patch.modified_files + patch.removed_files
     }
 
+    line_no = 0
     for line in msg.body.replace("\r", "").split("\n"):
+        line_no += 1
         if not is_diff:
             f = next((
                 key for key in file_lines.keys() if line.startswith(key)
@@ -100,7 +102,8 @@ def format_patch(msg):
             if f != None:
                 f = file_lines[f]
                 text += Markup(" <a href='#{}'>{}</a>".format(
-                    msg.message_id + "+" + f.path, f.path))
+                    escape(msg.message_id) + "+" + escape(f.path),
+                    escape(f.path)))
                 try:
                     stat = line[line.rindex(" ") + 1:]
                     line = line[:line.rindex(" ") + 1]
@@ -136,25 +139,38 @@ def format_patch(msg):
                 path = line[4:].lstrip("a/")
                 text += (
                     Markup("<a href='#{0}' id='{0}' class='text-info'>".format(
-                            msg.message_id + "+" + path
-                        ))
-                        + escape(line)
+                        escape(msg.message_id) + "+" + escape(path)
+                    ))
+                    + escape(line)
                     + Markup("</a>\n"))
             elif line.startswith("+++"):
                 text += (
                     Markup("<span class='text-info'>")
-                        + escape(line)
+                    + escape(line)
                     + Markup("</span>\n"))
             elif line.startswith("+"):
                 text += (
                     Markup("<span class='text-success'>")
-                        + escape(line)
+                    + Markup(
+                        "<a class='text-success' href='#{0}-{1}' " +
+                        "id='{0}-{1}'>+</a>".format(
+                            escape(msg.message_id), line_no))
+                    + escape(line[1:])
                     + Markup("</span>\n"))
             elif line.startswith("-"):
                 text += (
                     Markup("<span class='text-danger'>")
-                        + escape(line)
+                    + Markup(
+                        "<a class='text-danger' href='#{0}-{1}' " +
+                        "id='{0}-{1}'>-</a>".format(
+                            escape(msg.message_id), line_no))
+                    + escape(line[1:])
                     + Markup("</span>\n"))
+            elif line.startswith(" "):
+                text += (
+                    Markup("<a href='#{0}-{1}' id='{0}-{1}'> </a>".format(
+                            escape(msg.message_id), line_no))
+                    + escape(line[1:] + "\n"))
             else:
                 text += escape(line + "\n")
     return text.rstrip()
