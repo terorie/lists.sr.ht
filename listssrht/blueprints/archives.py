@@ -113,11 +113,11 @@ def format_patch(msg):
                     elif "-" in stat:
                         stat = Markup(
                                 "<span class='text-danger'>{}</span>".format(
-                                    removed))
+                                    stat))
                     elif "+" in stat:
                         stat = Markup(
                                 "<span class='text-success'>{}</span>".format(
-                                    added))
+                                    stat))
                     else:
                         stat = escape(stat)
                 except ValueError:
