@@ -26,7 +26,8 @@ blockquote.tree {
   grid-template-rows: 1fr auto;
   grid-template-areas:
     "from details-collapsed date"
-    "details details details";
+    "details details details"
+    "patch patch patch";
 
   .from {
     grid-area: from;
@@ -34,6 +35,10 @@ blockquote.tree {
 
   .date {
     grid-area: date;
+  }
+  
+  .patch-info {
+    grid-area: patch;
   }
 
   details {
@@ -67,5 +72,17 @@ blockquote.tree {
         margin-bottom: 0;
       }
     }
+  }
+}
+
+.message-body {
+  .text-success {
+    color: darken($success, 5) !important;
+  }
+  .text-danger {
+    color: darken($danger, 5) !important;
+  }
+  .text-info {
+    color: darken($info, 5) !important;
   }
 }

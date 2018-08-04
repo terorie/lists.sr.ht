@@ -35,6 +35,7 @@ class LoginApp(SrhtFlask):
             return {
                 "post_address": _post_address,
                 "quote": quote,
+                "sum": sum,
             }
 
         @self.login_manager.user_loader

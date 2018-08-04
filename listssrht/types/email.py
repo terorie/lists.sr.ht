@@ -1,7 +1,9 @@
 import email
+import io
 import sqlalchemy as sa
 from email import policy
 from srht.database import Base
+from unidiff import PatchSet
 
 class Email(Base):
     __tablename__ = 'email'
@@ -52,3 +54,12 @@ class Email(Base):
         self._parsed = email.message_from_string(
                 self.envelope, policy=policy.default)
         return self._parsed
+
+    def patch(self):
+        if not self.is_patch:
+            return None
+        if hasattr(self, "_patch"):
+            return self._patch
+        with io.StringIO(self.envelope) as f:
+            self._patch = PatchSet(f)
+        return self._patch

@@ -22,6 +22,21 @@
         {{ ml.description | md }}
       </p>
       {% endif %}
+      {% if any(patches) %}
+      <h3>Patches</h3>
+      <div class="event-list">
+        {% for patch in patches %}
+        <div class="event">
+          <a href="#{{ patch.message_id }}">
+            {{ patch.subject }}
+          </a>
+          {% set stats = diffstat(patch) %}
+          <span class="text-success">+{{stats.added}}</span>
+          <span class="text-danger">-{{stats.removed}}</span>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
     </div>
     <div class="col-md-8">
       {% macro display_message(msg) %}
@@ -92,8 +107,22 @@
               class="text-muted"
             >{{ msg.created | date }}</a>
           </div>
+          {% if msg.is_patch %}
+          <div class="patch-info">
+            {% set stats = diffstat(msg) %}
+            Patch
+            <span class="text-success">+{{stats.added}}</span>
+            <span class="text-danger">-{{stats.removed}}</span>
+            {# TODO
+            <a
+              href="#"
+              class="pull-right"
+            >Review <i class="fa fa-caret-right"></i></a>
+            #}
+          </div>
+          {% endif %}
         </div>
-        <pre>{{ msg.body }}</pre>
+        <pre class="message-body">{{format_body(msg)}}</pre>
 
         {% if len(msg.replies) > 1 %}
         {% for child in msg.replies %}

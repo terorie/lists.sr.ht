@@ -5,6 +5,7 @@ from srht.database import db
 from srht.flask import paginate_query, loginrequired
 from srht.validation import Validation
 from listssrht.types import List, User, Email, Subscription, ListAccess
+from jinja2 import Markup, escape
 from sqlalchemy import or_
 import email
 import email.utils
@@ -80,6 +81,57 @@ def list(owner_name, list_name):
             access=access, ListAccess=ListAccess,
             search=search, subscription=subscription, **pagination)
 
+def format_patch(msg):
+    text = Markup("")
+    is_diff = False
+    for line in msg.body.replace("\r", "").split("\n"):
+        if line.startswith("diff"):
+            is_diff = True
+        if not is_diff:
+            text += escape(line + "\n")
+            continue
+        if line.strip() == "--":
+            text += escape(line + "\n")
+        elif line.startswith("+++") or line.startswith("---"):
+            text += (
+                Markup("<span class='text-info'>")
+                    + escape(line)
+                + Markup("</span>\n"))
+        elif line.startswith("+"):
+            text += (
+                Markup("<span class='text-success'>")
+                    + escape(line)
+                + Markup("</span>\n"))
+        elif line.startswith("-"):
+            text += (
+                Markup("<span class='text-danger'>")
+                    + escape(line)
+                + Markup("</span>\n"))
+        else:
+            text += escape(line + "\n")
+    return text.rstrip()
+
+def format_body(msg):
+    if msg.is_patch:
+        return format_patch(msg)
+    text = Markup("")
+    for line in msg.body.replace("\r", "").split("\n"):
+        if line.startswith(">"):
+            text += (
+                Markup("<span class='text-muted'>")
+                    + escape(line)
+                + Markup("</span>\n"))
+        else:
+            text += escape(line + "\n")
+    return text.rstrip()
+
+def diffstat(patch):
+    p = patch.patch()
+    return type("diffstat", tuple(), {
+        "added": sum(f.added for f in p.added_files + p.modified_files),
+        "removed": sum(f.removed for f in p.removed_files + p.modified_files),
+    })
+
 @archives.route("/<owner_name>/<list_name>/<message_id>")
 def thread(owner_name, list_name, message_id):
     owner, ml, access = get_list(owner_name, list_name)
@@ -98,11 +150,15 @@ def thread(owner_name, list_name, message_id):
             owner_name=owner_name,
             list_name=list_name,
             message_id=thread.thread.message_id) + "#" + thread.message_id)
+    patches = [mail for mail in thread.descendants if mail.is_patch]
+    if thread.is_patch:
+        patches.append(thread)
+    patches = sorted(patches, key=lambda p: p.created)
+
     return render_template("thread.html",
-            owner=owner,
-            ml=ml,
-            thread=thread,
-            parseaddr=email.utils.parseaddr)
+            format_body=format_body, diffstat=diffstat,
+            owner=owner, ml=ml, thread=thread,
+            patches=patches, parseaddr=email.utils.parseaddr)
 
 @archives.route("/<owner_name>/<list_name>/<message_id>/raw")
 def raw(owner_name, list_name, message_id):
