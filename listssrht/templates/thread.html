@@ -31,6 +31,7 @@
             {{ patch.subject }}
           </a>
           {% set stats = diffstat(patch) %}
+          <br />
           <span class="text-success">+{{stats.added}}</span>
           <span class="text-danger">-{{stats.removed}}</span>
         </div>
