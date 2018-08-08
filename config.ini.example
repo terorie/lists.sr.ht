@@ -82,7 +82,7 @@ reject-mimetypes=text/html
 #
 # Link to include in the rejection message where senders can get help
 # correcting their email.
-reject-url=https://man.sr.ht/lists.sr.ht/how-to-send.md
+reject-url=https://man.sr.ht/lists.sr.ht/etiquette.md
 #
 # Redis instance used by celery for dispatching email blast tasks
 redis=redis://localhost:6379/0
