@@ -60,6 +60,6 @@ class Email(Base):
             return None
         if hasattr(self, "_patch"):
             return self._patch
-        with io.StringIO(self.envelope) as f:
+        with io.StringIO(self.body) as f:
             self._patch = PatchSet(f)
         return self._patch
