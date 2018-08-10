@@ -79,13 +79,6 @@ def _archive(dest, envelope):
         key: value for key, value in envelope.items()
     })
     mail.envelope = envelope.as_string(unixfrom=True, maxheaderlen=998)
-    try:
-        with io.StringIO(mail.envelope) as f:
-            patch = PatchSet(f)
-        mail.is_patch = len(patch) > 0
-    except:
-        mail.is_patch = False
-    mail.is_request_pull = False # TODO: Detect git request-pull
     mail.list_id = dest.id
     for part in envelope.walk():
         content_type = part.get_content_type()
@@ -94,6 +87,13 @@ def _archive(dest, envelope):
             # TODO: should we consider multiple text parts?
             mail.body = part.get_payload(decode=True).decode()
             break
+    try:
+        with io.StringIO(mail.body) as f:
+            patch = PatchSet(f)
+        mail.is_patch = len(patch) > 0
+    except:
+        mail.is_patch = False
+    mail.is_request_pull = False # TODO: Detect git request-pull
     reply_to = envelope["In-Reply-To"]
     parent = Email.query.filter(Email.message_id == reply_to).one_or_none()
     if parent is not None:
