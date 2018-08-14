@@ -81,11 +81,14 @@ def _archive(dest, envelope):
     mail.envelope = envelope.as_string(unixfrom=True, maxheaderlen=998)
     mail.list_id = dest.id
     for part in envelope.walk():
+        if part.is_multipart():
+            continue
         content_type = part.get_content_type()
+        [charset] = part.get_charsets("utf-8")
         # TODO: Verify signed emails
         if content_type == 'text/plain':
             # TODO: should we consider multiple text parts?
-            mail.body = part.get_payload(decode=True).decode()
+            mail.body = part.get_payload(decode=True).decode(charset)
             break
     try:
         with io.StringIO(mail.body) as f:
