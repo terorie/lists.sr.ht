@@ -34,7 +34,7 @@ tasks:
         --prefix=lists.sr.ht-$pkgver/ HEAD
   - package: |
       cd sr.ht-pkgbuilds/lists.sr.ht
-      prev_pkgver=$(pacman -Si meta.sr.ht | grep Version | cut -d ':' -f2 | cut -d ' ' -f2)
+      prev_pkgver=$(pacman -Si lists.sr.ht | grep Version | cut -d ':' -f2 | cut -d ' ' -f2)
       prev_pkgrel=$(printf "%s" "$prev_pkgver" | cut -d'-' -f2)
       prev_pkgver=$(printf "%s" "$prev_pkgver" | cut -d'-' -f1)
       if [ "$prev_pkgver" == "$pkgver" ]
