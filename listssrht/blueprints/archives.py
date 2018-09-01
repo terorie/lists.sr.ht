@@ -56,7 +56,7 @@ def apply_search(query):
     return query, search
 
 @archives.route("/<owner_name>/<list_name>")
-def list(owner_name, list_name):
+def archive(owner_name, list_name):
     owner, ml, access = get_list(owner_name, list_name)
     if not ml:
         abort(404)

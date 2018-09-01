@@ -26,10 +26,10 @@
           <a
             href="mailto:{{ post_address(ml) }}"
             class="btn btn-primary btn-block"
-          >New post <i class="fa fa-caret-right"></i></a>
+          >New post {{icon("caret-right")}}</a>
           {% endif %}
           <button class="btn btn-default btn-block">
-            Unsubscribe <i class="fa fa-caret-right"></i>
+            Unsubscribe {{icon("caret-right")}}
           </button>
           {% if current_user.id == ml.owner_id %}
           <a
@@ -39,20 +39,20 @@
               list_name=ml.name
             )}}"
             class="btn btn-default btn-block"
-          >List settings <i class="fa fa-caret-right"></i></a>
+          >List settings {{icon("caret-right")}}</a>
           {% endif %}
         </form>
         {% else %}
         <form method="POST" action="{{url_for("archives.subscribe",
               owner_name=owner.canonical_name(), list_name=ml.name) }}">
           <button class="btn btn-primary btn-block">
-            Subscribe <i class="fa fa-caret-right"></i>
+            Subscribe {{icon("caret-right")}}
           </button>
           {% if ListAccess.post in access %}
           <a
             href="mailto:{{ post_address(ml) }}"
             class="btn btn-default btn-block"
-          >New post <i class="fa fa-caret-right"></i></a>
+          >New post {{icon("caret-right")}}</a>
           {% endif %}
         </form>
         {% endif %}
@@ -61,12 +61,12 @@
         <a
           href="mailto:{{ post_address(ml, suffix="+subscribe") }}"
           class="btn btn-primary btn-block"
-        >Subscribe <i class="fa fa-caret-right"></i></a>
+        >Subscribe {{icon("caret-right")}}</a>
         {% if ListAccess.post in access %}
         <a
           href="mailto:{{ post_address(ml) }}"
           class="btn btn-default btn-block"
-        >New post <i class="fa fa-caret-right"></i></a>
+        >New pos {{icon("caret-right")}}t</a>
         {% endif %}
         {% endif %}
       </p>
@@ -96,18 +96,18 @@
           <small class="text-muted pull-right">
             {% if message.nreplies > 0 %}
             <span>
-              <i class="fa fa-reply"></i>
+              {{icon("reply")}}
               {{message.nreplies}}
             </span>
             {% endif %}
             {% if message.nparticipants > 1 %}
             <span>
-              <i class="fa fa-user"></i>
+              {{icon("user")}}
               {{message.nparticipants}}
             </span>
             {% endif %}
             <span>
-              <i class="fa fa-clock-o"></i> {{ message.updated | date }}
+              {{icon("clock")}} {{ message.updated | date }}
             </span>
           </small>
           <h4>
