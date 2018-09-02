@@ -117,7 +117,9 @@
           </div>
           {% endif %}
         </div>
-        {{format_body(msg)}}
+        <pre class="message-body">
+          {{format_body(msg)}}
+        </pre>
 
         {% if len(msg.replies) > 1 %}
         {% for child in msg.replies %}
