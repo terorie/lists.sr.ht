@@ -28,6 +28,7 @@ setup(
   package_data={
       'listssrht': [
           'templates/*.html',
+          'static/icons/*'
           'static/*'
       ]
   },
