@@ -1,4 +1,4 @@
-from srht.config import cfg, cfgi, load_config, loaded
+from srht.config import cfg, cfgi
 from srht.database import DbSession, db
 if not hasattr(db, "session"):
     db = DbSession(cfg("lists.sr.ht", "connection-string"))
