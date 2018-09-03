@@ -12,7 +12,7 @@ import re
 
 user = Blueprint("user", __name__)
 
-meta_uri = cfg("network", "meta")
+meta_uri = cfg("meta.sr.ht", "origin")
 
 @user.route("/")
 def index():

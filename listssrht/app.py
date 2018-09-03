@@ -1,21 +1,18 @@
 from srht.flask import SrhtFlask
-from srht.config import cfg, load_config
-load_config("lists")
-from urllib.parse import quote
-
+from srht.config import cfg
 from srht.database import DbSession
-db = DbSession(cfg("sr.ht", "connection-string"))
+
+db = DbSession(cfg("lists.sr.ht", "connection-string"))
 
 from listssrht.types import User
+
 db.init()
 
-from listssrht.blueprints.archives import archives
-from listssrht.blueprints.user import user
-
 from jinja2 import Markup, escape
+from urllib.parse import quote
 
 def _post_address(ml, suffix=""):
-    domain = cfg("lists", "posting-domain")
+    domain = cfg("lists.sr.ht", "posting-domain")
     return "{}/{}{}@{}".format(
             ml.owner.canonical_name(), ml.name, suffix, domain)
 
@@ -146,15 +143,18 @@ def _diffstat(patch):
 
 class LoginApp(SrhtFlask):
     def __init__(self):
-        super().__init__("lists", __name__)
+        super().__init__("lists.sr.ht", __name__)
 
         self.url_map.strict_slashes = False
+
+        from listssrht.blueprints.archives import archives
+        from listssrht.blueprints.user import user
 
         self.register_blueprint(archives)
         self.register_blueprint(user)
 
-        meta_client_id = cfg("meta.sr.ht", "oauth-client-id")
-        meta_client_secret = cfg("meta.sr.ht", "oauth-client-secret")
+        meta_client_id = cfg("lists.sr.ht", "oauth-client-id")
+        meta_client_secret = cfg("lists.sr.ht", "oauth-client-secret")
         self.configure_meta_auth(meta_client_id, meta_client_secret)
 
         @self.context_processor

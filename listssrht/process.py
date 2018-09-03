@@ -1,11 +1,11 @@
 from srht.config import cfg, cfgi, load_config, loaded
 is_celery = False
 if not loaded():
-    load_config("lists")
+    load_config("lists.sr.ht")
     is_celery = True
 from srht.database import DbSession, db
 if is_celery:
-    db = DbSession(cfg("sr.ht", "connection-string"))
+    db = DbSession(cfg("lists.sr.ht", "connection-string"))
     import listssrht.types
     db.init()
 from listssrht.types import Email, List, User, Subscription, ListAccess
@@ -22,7 +22,7 @@ from email.mime.text import MIMEText
 from email.utils import parseaddr, getaddresses
 from unidiff import PatchSet
 
-dispatch = Celery("lists.sr.ht", broker=cfg("lists", "redis"))
+dispatch = Celery("lists.sr.ht", broker=cfg("lists.sr.ht", "redis"))
 
 smtp_host = cfg("mail", "smtp-host", default=None)
 smtp_port = cfgi("mail", "smtp-port", default=None)
@@ -30,7 +30,7 @@ smtp_user = cfg("mail", "smtp-user", default=None)
 smtp_password = cfg("mail", "smtp-password", default=None)
 
 def _forward(dest, mail):
-    domain = cfg("lists", "posting-domain")
+    domain = cfg("lists.sr.ht", "posting-domain")
     list_name = "{}/{}".format(dest.owner.canonical_name(), dest.name)
     list_unsubscribe = list_name + "+unsubscribe@" + domain
     list_subscribe = list_name + "+subscribe@" + domain
@@ -42,8 +42,8 @@ def _forward(dest, mail):
             "<mailto:{}?subject=unsubscribe>".format(list_unsubscribe))
     mail["List-Subscribe"] = (
             "<mailto:{}?subject=subscribe>".format(list_subscribe))
-    mail["List-Archive"] = "<{}://{}/{}>".format(
-            cfg("server", "protocol"), cfg("server", "domain"), list_name)
+    mail["List-Archive"] = "<{}/{}>".format(
+            cfg("lists.sr.ht", "origin"), list_name)
     mail["List-Post"] = "<mailto:{}@{}>".format(list_name, domain)
     mail["List-ID"] = "{} <{}@{}>".format(dest.name, list_name, domain)
     mail["Sender"] = "{} <{}@{}>".format(list_name, list_name, domain)
@@ -148,7 +148,7 @@ list are restricted. Your request has been disregarded.{}
 
 However, you are permitted to post mail to this list at this address:
 
-{}@{}""".format(list_addr, cfg("lists", "posting-domain"))
+{}@{}""".format(list_addr, cfg("lists.sr.ht", "posting-domain"))
         if ListAccess.post in perms else "")))
     elif sub is None:
         reply = MIMEText("""Hi {}!
@@ -160,7 +160,7 @@ email to this address:
 
 Feel free to reply to this email if you have any questions.""".format(
                 sender[0] or sender[1], list_addr, list_addr,
-                cfg("lists", "posting-domain")))
+                cfg("lists.sr.ht", "posting-domain")))
         sub = Subscription()
         sub.user_id = user.id if user else None
         sub.list_id = dest.id
@@ -176,9 +176,9 @@ looks like you're already subscribed. To unsubscribe, send an email to:
 
 Feel free to reply to this email if you have any questions.""".format(
                 sender[0] or sender[1], list_addr, list_addr,
-                cfg("lists", "posting-domain")))
+                cfg("lists.sr.ht", "posting-domain")))
     reply["To"] = mail["From"]
-    reply["From"] = "mailer@" + cfg("lists", "posting-domain")
+    reply["From"] = "mailer@" + cfg("lists.sr.ht", "posting-domain")
     reply["In-Reply-To"] = mail["Message-ID"]
     reply["Subject"] = "Re: " + (
             mail.get("Subject") or "Your subscription request")
@@ -224,9 +224,9 @@ re-subscribe, send an email to:
 
 Feel free to reply to this email if you have any questions.""".format(
                 sender[0] or sender[1], list_addr, list_addr,
-                cfg("lists", "posting-domain")))
+                cfg("lists.sr.ht", "posting-domain")))
     reply["To"] = mail["From"]
-    reply["From"] = "mailer@" + cfg("lists", "posting-domain")
+    reply["From"] = "mailer@" + cfg("lists.sr.ht", "posting-domain")
     reply["In-Reply-To"] = mail["Message-ID"]
     reply["Subject"] = "Re: " + (
             mail.get("Subject") or "Your subscription request")
