@@ -1,10 +1,6 @@
 from srht.config import cfg, cfgi, load_config, loaded
-is_celery = False
-if not loaded():
-    load_config("lists.sr.ht")
-    is_celery = True
 from srht.database import DbSession, db
-if is_celery:
+if not hasattr(db, "session"):
     db = DbSession(cfg("lists.sr.ht", "connection-string"))
     import listssrht.types
     db.init()

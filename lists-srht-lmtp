@@ -3,7 +3,7 @@ from aiosmtpd.lmtp import LMTP
 from email.utils import parseaddr
 from fnmatch import fnmatch
 from grp import getgrnam
-from srht.config import load_config, cfg
+from srht.config import cfg
 from listssrht.types.listaccess import ListAccess
 import asyncio
 import asyncpg
@@ -11,8 +11,6 @@ import email
 import os
 import signal
 import sys
-
-load_config("lists.sr.ht")
 
 from listssrht.process import dispatch_message
 
