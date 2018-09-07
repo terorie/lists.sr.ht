@@ -134,14 +134,14 @@ def subscribe(owner_name, list_name):
         .filter(Subscription.list_id == ml.id)
         .filter(Subscription.user_id == current_user.id)).one_or_none()
     if sub:
-        return redirect(url_for("archives.list",
+        return redirect(url_for("archives.archive",
             owner_name=owner_name, list_name=list_name))
     sub = Subscription()
     sub.user_id = current_user.id
     sub.list_id = ml.id
     db.session.add(sub)
     db.session.commit()
-    return redirect(url_for("archives.list",
+    return redirect(url_for("archives.archive",
         owner_name=owner_name, list_name=list_name))
 
 @loginrequired
@@ -156,7 +156,7 @@ def unsubscribe(owner_name, list_name):
     if sub:
         db.session.delete(sub)
         db.session.commit()
-    return redirect(url_for("archives.list",
+    return redirect(url_for("archives.archive",
         owner_name=owner_name, list_name=list_name))
 
 access_help_map = {
@@ -218,5 +218,5 @@ def settings_POST(owner_name, list_name):
 
     db.session.commit()
 
-    return redirect(url_for("archives.list",
+    return redirect(url_for("archives.archive",
         owner_name=owner_name, list_name=list_name))

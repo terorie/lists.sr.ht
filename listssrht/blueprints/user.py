@@ -108,6 +108,6 @@ def create_list_POST():
     db.session.add(sub)
     db.session.commit()
 
-    return redirect(url_for("archives.list",
+    return redirect(url_for("archives.archive",
             owner_name=current_user.canonical_name(),
             list_name=ml.name))
