@@ -40,6 +40,7 @@
     <div class="col-md-7">
       <h2>Configure {{ list.name }}</h2>
       <form method="POST">
+        {{csrf_token()}}
         <div class="form-group">
           <label for="list_name">
             Name
