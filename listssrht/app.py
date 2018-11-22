@@ -93,8 +93,8 @@ def _format_patch(msg, limit=None):
                 text += (
                     Markup("<span class='text-success'>")
                     + Markup(
-                        "<a class='text-success' href='#{0}-{1}' " +
-                        "id='{0}-{1}'>+</a>".format(
+                        ("<a class='text-success' href='#{0}-{1}' " +
+                        "id='{0}-{1}'>+</a>").format(
                             escape(msg.message_id), line_no))
                     + escape(line[1:])
                     + Markup("</span>\n"))
@@ -102,8 +102,8 @@ def _format_patch(msg, limit=None):
                 text += (
                     Markup("<span class='text-danger'>")
                     + Markup(
-                        "<a class='text-danger' href='#{0}-{1}' " +
-                        "id='{0}-{1}'>-</a>".format(
+                        ("<a class='text-danger' href='#{0}-{1}' " +
+                        "id='{0}-{1}'>-</a>").format(
                             escape(msg.message_id), line_no))
                     + escape(line[1:])
                     + Markup("</span>\n"))
