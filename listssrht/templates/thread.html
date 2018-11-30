@@ -85,7 +85,12 @@
                 <dd><code>{{ msg.message_id }}</code></dd>
                 {% if msg.parent_id %}
                 <dt>In-Reply-To</dt>
-                <dd><code>{{ msg.parent.message_id }}</code></dd>
+                <dd>
+                  <code>
+                    {{ msg.parent.message_id }}
+                  </code>
+                  <a href="#{{msg.parent.message_id}}">(view parent)</a>
+                </dd>
                 {% endif %}
               </dl>
               <a href="{{ url_for(".raw",
@@ -121,9 +126,7 @@
 
         {% if len(msg.replies) > 1 %}
         {% for child in msg.replies %}
-        <blockquote class="tree">
         {{ display_message(child) }}
-        </blockquote>
         {% endfor %}
         {% endif %}
       </div>
