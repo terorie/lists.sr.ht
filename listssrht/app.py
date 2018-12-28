@@ -4,7 +4,7 @@ from srht.database import DbSession
 
 db = DbSession(cfg("lists.sr.ht", "connection-string"))
 
-from listssrht.types import User
+from listssrht.types import User, UserType
 
 db.init()
 
@@ -171,13 +171,13 @@ class LoginApp(SrhtFlask):
             return User.query.filter(User.session == session).one_or_none()
 
     def lookup_or_register(self, exchange, profile, scopes):
-        user = User.query.filter(User.username == profile["username"]).first()
+        user = User.query.filter(User.username == profile["name"]).one_or_none()
         if not user:
             user = User()
             db.session.add(user)
-        user.username = profile.get("username")
-        user.email = profile.get("email")
-        user.admin = profile.get("admin")
+        user.username = profile["name"]
+        user.email = profile["email"]
+        user.user_type = UserType(profile["user_type"])
         user.oauth_token = exchange["token"]
         user.oauth_token_expires = exchange["expires"]
         user.oauth_token_scopes = scopes
