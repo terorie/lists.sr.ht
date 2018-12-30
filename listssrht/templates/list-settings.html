@@ -1,7 +1,7 @@
 {% extends "lists.html" %}
 {% block title %}
 <title>
-  {{ owner.canonical_name() }}/{{ list.name }} settings &mdash; {{ cfg("sr.ht", "site-name") }} lists
+  {{ owner.canonical_name }}/{{ list.name }} settings &mdash; {{ cfg("sr.ht", "site-name") }} lists
 </title>
 {% endblock %}
 
@@ -115,7 +115,7 @@
           <a
             href="{{ url_for(
               ".archive",
-              owner_name=list.owner.canonical_name(),
+              owner_name=list.owner.canonical_name,
               list_name=list.name) }}"
             class="btn btn-default"
           >Cancel</a>

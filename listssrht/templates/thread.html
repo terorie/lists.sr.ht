@@ -10,10 +10,10 @@
     <div class="col-md-4">
       <h2>
         <a
-          href="/{{ owner.canonical_name() }}"
-        >{{ owner.canonical_name() }}</a>/<a
+          href="/{{ owner.canonical_name }}"
+        >{{ owner.canonical_name }}</a>/<a
           href="{{ url_for('archives.archive',
-            owner_name=owner.canonical_name(),
+            owner_name=owner.canonical_name,
             list_name=ml.name) }}"
         >{{ ml.name }}</a>
       </h2>
@@ -65,7 +65,7 @@
             {% set from_hdr = msg.parsed()['From'] %}
             {% set from = parseaddr(from_hdr) %}
             {% if msg.sender != None %}
-            <a href="/{{ msg.sender.canonical_name() }}">
+            <a href="/{{ msg.sender.canonical_name }}">
               {{from[0]}}
             </a>
             {% else %}
@@ -94,7 +94,7 @@
                 {% endif %}
               </dl>
               <a href="{{ url_for(".raw",
-                  owner_name=ml.owner.canonical_name(),
+                  owner_name=ml.owner.canonical_name,
                   list_name=ml.name,
                   message_id=msg.message_id
                 ) }}" target="_blank">Download raw message</a>

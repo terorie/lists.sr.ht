@@ -1,7 +1,7 @@
 {% extends "lists.html" %}
 {% block title %}
 <title>
-  {{ owner.canonical_name() }}/{{ ml.name }} archives &mdash; {{site}}
+  {{ owner.canonical_name }}/{{ ml.name }} archives &mdash; {{site}}
 </title>
 {% endblock %}
 {% block content %}
@@ -10,8 +10,8 @@
     <div class="col-md-4">
       <h2>
         <a
-          href="/{{ owner.canonical_name() }}"
-        >{{ owner.canonical_name() }}</a>/{{ ml.name }}
+          href="/{{ owner.canonical_name }}"
+        >{{ owner.canonical_name }}</a>/{{ ml.name }}
       </h2>
       {% if ml.description %}
       {{ml.description | md}}
@@ -21,7 +21,7 @@
 
         {% if subscription %}
         <form method="POST" action="{{url_for("archives.unsubscribe",
-              owner_name=owner.canonical_name(), list_name=ml.name) }}">
+              owner_name=owner.canonical_name, list_name=ml.name) }}">
           {{csrf_token()}}
           {% if ListAccess.post in access %}
           <a
@@ -36,7 +36,7 @@
           <a
             href="{{url_for(
               "archives.settings_GET",
-              owner_name=ml.owner.canonical_name(),
+              owner_name=ml.owner.canonical_name,
               list_name=ml.name
             )}}"
             class="btn btn-default btn-block"
@@ -45,7 +45,7 @@
         </form>
         {% else %}
         <form method="POST" action="{{url_for("archives.subscribe",
-              owner_name=owner.canonical_name(), list_name=ml.name) }}">
+              owner_name=owner.canonical_name, list_name=ml.name) }}">
           {{csrf_token()}}
           <button class="btn btn-primary btn-block">
             Subscribe {{icon("caret-right")}}
@@ -115,7 +115,7 @@
           <h4>
             <a href="{{
               url_for('archives.thread',
-                owner_name=owner.canonical_name(),
+                owner_name=owner.canonical_name),
                 list_name=ml.name,
                 message_id=message.message_id)
             }}">

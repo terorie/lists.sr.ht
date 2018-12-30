@@ -27,7 +27,7 @@ smtp_password = cfg("mail", "smtp-password", default=None)
 
 def _forward(dest, mail):
     domain = cfg("lists.sr.ht", "posting-domain")
-    list_name = "{}/{}".format(dest.owner.canonical_name(), dest.name)
+    list_name = "{}/{}".format(dest.owner.canonical_name, dest.name)
     list_unsubscribe = list_name + "+unsubscribe@" + domain
     list_subscribe = list_name + "+subscribe@" + domain
     for overwrite in ["List-Unsubscribe", "List-Subscribe", "List-Archive",
@@ -131,7 +131,7 @@ def _subscribe(dest, mail):
             Subscription.list_id == dest.id,
             Subscription.email == sender[1]).one_or_none()
 
-    list_addr = dest.owner.canonical_name() + "/" + dest.name
+    list_addr = dest.owner.canonical_name + "/" + dest.name
     message = None
 
     # TODO: User-specific/email-specific overrides
@@ -200,7 +200,7 @@ def _unsubscribe(dest, mail):
         sub = Subscription.query.filter(
             Subscription.list_id == dest.id,
             Subscription.email == sender[1]).one_or_none()
-    list_addr = dest.owner.canonical_name() + "/" + dest.name
+    list_addr = dest.owner.canonical_name + "/" + dest.name
     message = None
     if sub is None:
         reply = MIMEText("""Hi {}!
