@@ -1,4 +1,5 @@
 from jinja2 import Markup, escape
+from srht.config import cfg
 
 def post_address(ml, suffix=""):
     domain = cfg("lists.sr.ht", "posting-domain")
