@@ -1,0 +1,177 @@
+#!/usr/bin/env python3
+from aiosmtpd.lmtp import LMTP
+from email.utils import parseaddr
+from fnmatch import fnmatch
+from grp import getgrnam
+from srht.config import cfg
+from listssrht.types.listaccess import ListAccess
+import asyncio
+import asyncpg
+import email
+import os
+import signal
+import sys
+
+from listssrht.process import dispatch_message
+
+loop = asyncio.new_event_loop()
+
+class MailHandler:
+    def __init__(self, pg):
+        self.pg = pg
+
+    async def initialize(self):
+        self.permit_mimetypes = cfg("lists.sr.ht::worker",
+                "permit-mimetypes").split(',')
+        self.reject_mimetypes = cfg("lists.sr.ht::worker",
+                "reject-mimetypes").split(',')
+        self.reject_url = cfg("lists.sr.ht::worker", "reject-url")
+        self.fetch_user = await self.pg.prepare(
+                '''SELECT "id" FROM "user"
+                   WHERE username = $1''')
+        self.fetch_user_by_email = await self.pg.prepare(
+                '''SELECT "id" FROM "user"
+                   WHERE email = $1''')
+        self.fetch_list = await self.pg.prepare(
+                '''SELECT
+                       "id",
+                       "owner_id",
+                       "nonsubscriber_permissions",
+                       "subscriber_permissions",
+                       "account_permissions"
+                   FROM "list"
+                   WHERE "owner_id" = $1 AND "name" = $2''')
+        self.fetch_subscription = await self.pg.prepare(
+                '''SELECT "id" FROM "subscription"
+                   WHERE (email IS NOT NULL AND email = $1) or
+                         (user_id IS NOT NULL AND user_id = $2)''')
+        self.fetch_email = await self.pg.prepare(
+                '''SELECT "list_id" FROM "email"
+                   WHERE "message_id" = $1''')
+
+    async def lookup_destination(self, address):
+        """Looks up the list this message is addressed to and returns its ID."""
+        # Note: we assume postfix took care of the domain
+        address = address[:address.rfind("@")]
+        command = "post"
+        if "+" in address:
+            command = address[address.rfind("+") + 1:]
+            address = address[:address.rfind("+")]
+        if not command in ["subscribe", "unsubscribe", "post"]:
+            return None, None
+        if address.startswith("~"):
+            # TODO: user groups
+            if not "/" in address:
+                return None, None
+            owner, list_name = address.split("/")
+            owner_id = await self.fetch_user.fetchval(owner[1:])
+            if not owner_id:
+                return None
+            result = await self.fetch_list.fetchrow(
+                    owner_id, list_name)
+            return result, command
+        else:
+            # TODO: Attempt fallback method (e.g. users.x.y@)
+            return None, None
+
+    def validate(self, mail):
+        required_headers = ["To", "From", "Subject"]
+        for header in required_headers:
+            if not mail.get(header):
+                return "The {} header is required.".format(header)
+        for part in mail.walk():
+            content_type = part.get_content_type()
+            if fnmatch(content_type, "multipart/*"):
+                continue
+            permit = False
+            for whitelist in self.permit_mimetypes:
+                if fnmatch(content_type, whitelist):
+                    permit = True
+                    break
+            if not permit:
+                return "Content-Type {} is not in the whitelist.".format(
+                        content_type)
+            for blacklist in self.reject_mimetypes:
+                if fnmatch(content_type, blacklist):
+                    return "Content-Type {} is blacklisted.".format(
+                            content_type)
+        return None
+
+    async def handle_RCPT(self, server, session,
+            envelope, address, rcpt_options):
+        print("RCPT {}".format(address))
+        envelope.rcpt_tos.append(address)
+        return "250 OK"
+
+    async def handle_DATA(self, server, session, envelope):
+        address = envelope.rcpt_tos[0]
+        dest, command = await self.lookup_destination(address)
+        if dest is None:
+            print("Rejected, mailing list not found")
+            return "550 The mailing list you requested does not exist."
+        dest_id, owner_id, nonsub_perms, sub_perms, external_perms = dest
+        nonsub_perms = ListAccess(nonsub_perms)
+        sub_perms = ListAccess(sub_perms)
+        external_perms = ListAccess(external_perms)
+
+        mail = email.message_from_bytes(envelope.content)
+
+        in_reply_to = mail.get("In-Reply-To")
+        in_reply_to = await self.fetch_email.fetchval(in_reply_to)
+        access = ListAccess.reply if in_reply_to == dest_id else ListAccess.post
+
+        _from = parseaddr(mail["From"])
+        user_id = await self.fetch_user_by_email.fetchval(_from[1])
+
+        if command != "post":
+            print("Command accepted: {}".format(mail.get("Subject")))
+            dispatch_message.delay(address, dest_id, str(mail))
+            return "250 Message accepted for delivery"
+
+        err = self.validate(mail)
+        if err is not None:
+            print("Rejected due to validation errors")
+            return "500 Rejected. {} See {} for help.".format(
+                err, self.reject_url)
+
+        if owner_id != user_id:
+            sub = await self.fetch_subscription.fetchval(_from[1], user_id)
+
+            if access not in nonsub_perms and not sub:
+                print("Rejected: non-subscribers are not allowed to post")
+                return "500 Rejected. Non-subscribers are not allowed to post to this list."
+
+            if access not in sub_perms and sub:
+                print("Rejected: non-subscribers are not allowed to post")
+                return "500 Rejected. You are not allowed to post to this list."
+
+            if access not in external_perms and not user_id:
+                print("Rejected: non-users are not allowed to post")
+                return "500 Rejected. Users without an account are not allowed to post to this list."
+
+        print("Message accepted: {}".format(mail.get("Subject")))
+        dispatch_message.delay(address, dest_id, str(mail))
+        return "250 Message accepted for delivery"
+
+async def create_server():
+    sock_gid = getgrnam(cfg("lists.sr.ht::worker", "sock-group")).gr_gid
+    pg = await asyncpg.connect(dsn=cfg("lists.sr.ht", "connection-string"))
+    handler = MailHandler(pg)
+    await handler.initialize()
+    sock_path = cfg("lists.sr.ht::worker", "sock")
+    await loop.create_unix_server(
+            lambda: LMTP(handler, enable_SMTPUTF8=True),
+            path=sock_path)
+    os.chmod(sock_path, 0o775)
+    os.chown(sock_path, os.getuid(), sock_gid)
+
+def sigint_handler():
+    print("Exiting due to SIGINT")
+    sys.exit(0)
+
+loop.add_signal_handler(signal.SIGINT, sigint_handler)
+
+print("Starting LTMP server")
+loop.run_until_complete(create_server())
+loop.run_forever()
+loop.close()
