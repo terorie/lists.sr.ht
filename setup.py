@@ -33,7 +33,6 @@ setup(
       ]
   },
   scripts = [
-      'lists-srht-lmtp',
       'listssrht-lmtp',
       'listssrht-migrate',
   ],
