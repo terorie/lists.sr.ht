@@ -75,7 +75,7 @@ class MailHandler:
             return None, None
 
     def validate(self, mail):
-        required_headers = ["To", "From", "Subject"]
+        required_headers = ["To", "From", "Subject", "Message-Id"]
         for header in required_headers:
             if not mail.get(header):
                 return "The {} header is required.".format(header)
