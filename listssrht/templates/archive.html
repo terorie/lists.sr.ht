@@ -83,7 +83,7 @@
       {% endif %}
     </div>
     <div class="col-md-8">
-      {% if any(threads) %}
+      {% if any(threads) or search %}
       <form>
         <input
           name="search"
@@ -92,6 +92,8 @@
           class="form-control"
           value="{{ search if search else "" }}" />
       </form>
+      {% endif %}
+      {% if any(threads) %}
       <div class="event-list">
         {% for message in threads %}
         <div class="event archive-entry">
@@ -128,7 +130,11 @@
       {{ pagination() }}
       {% else %}
       <p>
+        {% if search %}
+        Nothing found.
+        {% else %}
         No one has posted to this list yet.
+        {% endif %}
       </p>
       {% endif %}
     </div>
