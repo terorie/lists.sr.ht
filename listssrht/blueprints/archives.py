@@ -122,6 +122,29 @@ def raw(owner_name, list_name, message_id):
         abort(404)
     return Response(message.envelope, mimetype='text/plain')
 
+def format_mbox(msg):
+    parsed = msg.parsed()
+    b = parsed.as_bytes(unixfrom=True) + b'\r\n'
+    for reply in msg.replies:
+        b += format_mbox(reply)
+    return b
+
+@archives.route("/<owner_name>/<list_name>/<message_id>/t.mbox")
+def mbox(owner_name, list_name, message_id):
+    owner, ml, access = get_list(owner_name, list_name)
+    if not ml:
+        abort(404)
+    if ListAccess.browse not in access:
+        abort(401)
+    thread = (Email.query
+            .filter(Email.message_id == message_id)
+            .filter(Email.list_id == ml.id)
+        ).one_or_none()
+    if not thread or thread.thread_id != None:
+        abort(404)
+    mbox = format_mbox(thread)
+    return Response(mbox, mimetype='application/mbox')
+
 @loginrequired
 @archives.route("/<owner_name>/<list_name>/subscribe", methods=["POST"])
 def subscribe(owner_name, list_name):
