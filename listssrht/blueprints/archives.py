@@ -4,8 +4,10 @@ from flask_login import current_user
 from srht.database import db
 from srht.flask import paginate_query, loginrequired
 from srht.validation import Validation
+from listssrht.filters import post_address
 from listssrht.types import List, User, Email, Subscription, ListAccess
 from sqlalchemy import or_
+from urllib.parse import urlencode
 import email
 import email.utils
 
@@ -76,7 +78,7 @@ def archive(owner_name, list_name):
                 .filter(Subscription.user_id == current_user.id)).one_or_none()
 
     return render_template("archive.html",
-            owner=owner, ml=ml, threads=threads,
+            view="archives", owner=owner, ml=ml, threads=threads,
             access=access, ListAccess=ListAccess,
             search=search, subscription=subscription, **pagination)
 
@@ -103,9 +105,19 @@ def thread(owner_name, list_name, message_id):
         patches.append(thread)
     patches = sorted(patches, key=lambda p: p.created)
 
-    return render_template("thread.html",
-            owner=owner, ml=ml, thread=thread,
-            patches=patches, parseaddr=email.utils.parseaddr)
+    def reply_to(msg):
+        params = {
+            "cc": msg.parsed()['From'],
+            "in-reply-to": msg.message_id,
+            "subject": (f"Re: {msg.subject}"
+                if not msg.subject.lower().startswith("re:")
+                else msg.subject),
+        }
+        return f"mailto:{post_address(msg.list)}?{urlencode(params)}"
+
+    return render_template("thread.html", view="archives", owner=owner,
+            ml=ml, thread=thread, patches=patches,
+            parseaddr=email.utils.parseaddr, reply_to=reply_to)
 
 @archives.route("/<owner_name>/<list_name>/<message_id>/raw")
 def raw(owner_name, list_name, message_id):
@@ -199,8 +211,9 @@ def settings_GET(owner_name, list_name):
         abort(404)
     if ml.owner_id != current_user.id:
         abort(401)
-    return render_template("list-settings.html", list=ml, owner=owner,
-            access_type_list=ListAccess, access_help_map=access_help_map)
+    return render_template("list-settings.html", view="settings",
+            ml=ml, owner=owner, access_type_list=ListAccess,
+            access_help_map=access_help_map)
 
 @loginrequired
 @archives.route("/<owner_name>/<list_name>/settings", methods=["POST"])

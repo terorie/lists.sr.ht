@@ -1,4 +1,4 @@
-{% extends "lists.html" %}
+{% extends "list.html" %}
 {% block title %}
 <title>
   {{ thread.subject }} &mdash; {{ cfg("sr.ht", "site-name") }} lists
@@ -13,22 +13,13 @@
 <div class="container">
   <div class="row">
     <div class="col-md-4">
-      <h2>
-        <a
-          href="/{{ owner.canonical_name }}"
-        >{{ owner.canonical_name }}</a>/<a
-          href="{{ url_for('archives.archive',
-            owner_name=owner.canonical_name,
-            list_name=ml.name) }}"
-        >{{ ml.name }}</a>
-      </h2>
-      {% if ml.description %}
-      <p>
-        {{ ml.description | md }}
-      </p>
-      {% endif %}
       <div class="form-group">
-        <a class="btn btn-primary btn-block" href="{{ url_for('archives.mbox',
+        {% if current_user %}
+        <a class="btn btn-primary btn-block"
+          href="{{reply_to(thread.replies[-1] if thread.replies else thread)}}"
+        >Reply to thread {{icon('caret-right')}}</a>
+        {% endif %}
+        <a class="btn btn-default btn-block" href="{{ url_for('archives.mbox',
           owner_name=owner.canonical_name, list_name=ml.name,
           message_id=thread.message_id) }}"
         >Export thread (mbox) {{icon('caret-right')}}</a>
@@ -83,9 +74,7 @@
             {{from[0]}}
             {% endif %}
             {% if current_user %}
-            <a
-              href="mailto:{{ post_address(ml) }}?cc={{from_hdr}}&in-reply-to={{quote(msg.message_id)}}"
-            >&lt;{{ from[1] }}&gt;</a>
+            <a href="{{reply_to(msg)}}">&lt;{{ from[1] }}&gt;</a>
             {% endif %}
           </div>
           <details>
@@ -124,12 +113,6 @@
             Patch
             <span class="text-success">+{{stats.added}}</span>
             <span class="text-danger">-{{stats.removed}}</span>
-            {# TODO
-            <a
-              href="#"
-              class="pull-right"
-            >Review {{icon("caret-right")}}</a>
-            #}
           </div>
           {% endif %}
         </div>

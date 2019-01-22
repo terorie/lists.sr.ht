@@ -1,18 +1,8 @@
-{% extends "lists.html" %}
-{% block title %}
-<title>
-  {{ owner.canonical_name }}/{{ ml.name }} archives &mdash; {{site}}
-</title>
-{% endblock %}
+{% extends "list.html" %}
 {% block content %}
-<div class="container">
+<div class="container-fluid">
   <div class="row">
-    <div class="col-md-4">
-      <h2>
-        <a
-          href="/{{ owner.canonical_name }}"
-        >{{ owner.canonical_name }}</a>/{{ ml.name }}
-      </h2>
+    <div class="col-md-3">
       {% if ml.description %}
       {{ml.description | md}}
       {% endif %}
@@ -32,16 +22,6 @@
           <button class="btn btn-default btn-block">
             Unsubscribe {{icon("caret-right")}}
           </button>
-          {% if current_user.id == ml.owner_id %}
-          <a
-            href="{{url_for(
-              "archives.settings_GET",
-              owner_name=ml.owner.canonical_name,
-              list_name=ml.name
-            )}}"
-            class="btn btn-default btn-block"
-          >List settings {{icon("caret-right")}}</a>
-          {% endif %}
         </form>
         {% else %}
         <form method="POST" action="{{url_for("archives.subscribe",
@@ -82,7 +62,7 @@
       </p>
       {% endif %}
     </div>
-    <div class="col-md-8">
+    <div class="col-md-9">
       {% if any(threads) or search %}
       <form>
         <input

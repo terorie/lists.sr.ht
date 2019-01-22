@@ -1,0 +1,47 @@
+{% extends "lists.html" %}
+{% block title %}
+<title>
+  {{ owner.canonical_name }}/{{ ml.name }} archives &mdash; {{site}}
+</title>
+{% endblock %}
+{% block body %}
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-md-12 header-tabbed">
+      <h2>
+        <a href="{{
+          url_for('user.user_profile', username=owner.username)
+        }}">{{ owner.canonical_name }}</a>/{{ ml.name }}
+      </h2>
+      {% block tabs %}
+      {% macro link(path, title) %}
+      <a
+        class="nav-link {% if view == title %}active{% endif %}"
+        href="{{ path }}">{{ title }}</a>
+      {% endmacro %}
+      <ul class="nav nav-tabs">
+        <li class="nav-item">
+          {{link(url_for("archives.archive",
+            owner_name=owner.canonical_name,
+            list_name=ml.name), "archives")}}
+        </li>
+        <li class="nav-item">
+          <a
+            class="nav-link {% if view == "post" %}active{% endif %}"
+            href="mailto:{{ post_address(ml) }}"
+          >new post</a>
+        </li>
+        {% if current_user.id == ml.owner_id %}
+        <li class="nav-item">
+          {{link(url_for("archives.settings_GET",
+            owner_name=ml.owner.canonical_name,
+            list_name=ml.name), "settings")}}
+        </li>
+        {% endif %}
+      </ul>
+      {% endblock %}
+    </div>
+  </div>
+</div>
+{% block content %}{% endblock %}
+{% endblock %}
