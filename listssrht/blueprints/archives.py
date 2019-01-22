@@ -129,7 +129,7 @@ def format_mbox(msg):
         b += format_mbox(reply)
     return b
 
-@archives.route("/<owner_name>/<list_name>/<message_id>/t.mbox")
+@archives.route("/<owner_name>/<list_name>/<message_id>/mbox")
 def mbox(owner_name, list_name, message_id):
     owner, ml, access = get_list(owner_name, list_name)
     if not ml:
