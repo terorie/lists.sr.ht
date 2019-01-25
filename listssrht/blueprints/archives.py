@@ -7,7 +7,7 @@ from srht.validation import Validation
 from listssrht.filters import post_address
 from listssrht.types import List, User, Email, Subscription, ListAccess
 from sqlalchemy import or_
-from urllib.parse import urlencode
+from urllib.parse import quote, urlencode
 import email
 import email.utils
 
@@ -113,7 +113,7 @@ def thread(owner_name, list_name, message_id):
                 if not msg.subject.lower().startswith("re:")
                 else msg.subject),
         }
-        return f"mailto:{post_address(msg.list)}?{urlencode(params)}"
+        return f"mailto:{post_address(msg.list)}?{urlencode(params, quote_via=quote)}"
 
     return render_template("thread.html", view="archives", owner=owner,
             ml=ml, thread=thread, patches=patches,
