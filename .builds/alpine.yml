@@ -29,15 +29,17 @@ tasks:
         pkgver="${pkgver}_git${cdate}"
       fi
       echo "pkgver=$pkgver" >> ~/.buildenv
-      git archive --prefix=${project}-$pkgver/ HEAD | xz \
-        > ~/sr.ht-apkbuilds/sr.ht/${project}/${project}-$pkgver.tar.xz
+      git archive --prefix=${project}-$pkgver/ HEAD | gzip \
+        > ~/sr.ht-apkbuilds/sr.ht/${project}/${project}-$pkgver.tar.gz
   - pkgkit: |
       cd sr.ht-apkbuilds
       ./pkgkit add-repo -s sr.ht ~/.abuild/alpine@sr.ht.rsa
+      cd sr.ht/$project
+      sed -e 's?::https://git.sr.ht/.*archive.*??g' -i APKBUILD
   - package: |
       cd sr.ht-apkbuilds
       ./pkgkit build -cuv "$pkgver" "$project"
-      cd ~/"$project"
+      cd ~/$project
       git describe --exact-match HEAD || complete-build
   - publish: |
       cd sr.ht-apkbuilds
