@@ -20,7 +20,7 @@ tasks:
       cd ${project}
       pkgver=$(git describe | sed -e 's/-/_/g')
       echo "pkgver=$pkgver" >> ~/.buildenv
-      git archive -o ~/sr.ht-pkgbuilds/$project/$project-$pkgver.tar.xz \
+      git archive -o ~/sr.ht-pkgbuilds/$project/$project-$pkgver.tar.gz \
         --prefix=$project-$pkgver/ HEAD
   - package: |
       cd sr.ht-pkgbuilds
