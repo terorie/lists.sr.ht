@@ -12,8 +12,8 @@ sources:
   - https://git.sr.ht/~sircmpwn/sr.ht-apkbuilds
 environment:
   project: lists.sr.ht
-  repo_server: deploy@mirror.sr.ht
-  repo_path: /var/www/mirror.sr.ht/alpine/sr.ht/x86_64
+  remote: deploy@mirror.sr.ht
+  remote_path: /var/www/mirror.sr.ht/alpine
   master: lists.sr.ht
 secrets:
   - fa00a8d3-7b63-42d5-8060-3bb31c3e3018 # ssh deploy key
@@ -43,8 +43,9 @@ tasks:
       git describe --exact-match HEAD || complete-build
   - publish: |
       cd sr.ht-apkbuilds
+      echo "StrictHostKeyChecking=no" >> ~/.ssh/config
       ./pkgkit upload "$remote" "$remote_path" "$project"
-#  - deploy: |
-#      sshopts="-o StrictHostKeyChecking=no"
-#      ssh $sshopts deploy@$master doas apk upgrade -U
-#      ssh $sshopts deploy@$master doas service lists.sr.ht restart
+  - deploy: |
+      ssh deploy@$master doas apk upgrade -U
+      ssh deploy@$master doas service lists.sr.ht restart
+      ssh deploy@$master doas service lists.sr.ht-process restart
