@@ -21,16 +21,11 @@ secrets:
 tasks:
   - archive: |
       cd ${project}
-      pkgver=$(git describe --abbrev=0)
-      if ! git describe --exact-match HEAD
-      then
-        cdate=$(git show -s -1 --format='%ci' HEAD)
-        cdate=$(echo "$cdate" | cut -d' ' -f1 | sed -e 's/-//g')
-        pkgver="${pkgver}_git${cdate}"
-      fi
+      pkgver=$(~/sr.ht-apkbuilds/pkgkit pkgver)
       echo "pkgver=$pkgver" >> ~/.buildenv
-      git archive --prefix=${project}-$pkgver/ HEAD | gzip \
-        > ~/sr.ht-apkbuilds/sr.ht/${project}/${project}-$pkgver.tar.gz
+      git archive \
+        -o ~/sr.ht-apkbuilds/sr.ht/${project}/${project}-$pkgver.tar.gz \
+        --prefix=${project}-$pkgver/ HEAD
   - pkgkit: |
       cd sr.ht-apkbuilds
       ./pkgkit add-repo -s sr.ht ~/.abuild/alpine@sr.ht.rsa
