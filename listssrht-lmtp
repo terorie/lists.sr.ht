@@ -79,8 +79,11 @@ class MailHandler:
         for header in required_headers:
             if not mail.get(header):
                 return "The {} header is required.".format(header)
+        found_textpart = False
         for part in mail.walk():
             content_type = part.get_content_type()
+            if content_type == "text/plain":
+                found_textpart = True
             if fnmatch(content_type, "multipart/*"):
                 continue
             permit = False
@@ -95,6 +98,8 @@ class MailHandler:
                 if fnmatch(content_type, blacklist):
                     return "Content-Type {} is blacklisted.".format(
                             content_type)
+        if not found_textpart:
+            return "At least one text/plain part is required."
         return None
 
     async def handle_RCPT(self, server, session,
