@@ -11,7 +11,6 @@ class Email(Base):
     created = sa.Column(sa.DateTime, nullable=False)
     updated = sa.Column(sa.DateTime, nullable=False)
     subject = sa.Column(sa.Unicode(512), nullable=False)
-    # This will be generated if not present
     message_id = sa.Column(sa.Unicode(512), nullable=False)
     headers = sa.Column(sa.JSON, nullable=False)
     body = sa.Column(sa.Unicode, nullable=False)

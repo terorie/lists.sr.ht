@@ -71,9 +71,9 @@ def _archive(dest, envelope):
     mail = Email()
     mail.subject = envelope["Subject"]
     mail.message_id = envelope["Message-ID"]
-    mail.headers = json.dumps({
+    mail.headers = {
         key: value for key, value in envelope.items()
-    })
+    }
     mail.envelope = envelope.as_string(unixfrom=True, maxheaderlen=998)
     mail.list_id = dest.id
     for part in envelope.walk():

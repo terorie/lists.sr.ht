@@ -1,12 +1,13 @@
 from flask import Blueprint, render_template, abort, request, redirect, url_for
 from flask import Response
 from flask_login import current_user
+from sqlalchemy import String, cast
 from srht.database import db
+from srht.search import search
 from srht.flask import paginate_query, loginrequired
 from srht.validation import Validation
 from listssrht.filters import post_address
 from listssrht.types import List, User, Email, Subscription, ListAccess
-from sqlalchemy import or_
 from urllib.parse import quote, urlencode
 import email
 import email.utils
@@ -41,21 +42,27 @@ def get_list(owner_name, list_name):
     return owner, ml, access
 
 def apply_search(query):
-    search = request.args.get("search")
-    if not search:
-        return query, None
-    terms = search.split(" ")
-    for term in terms:
-        term = term.lower()
-        if ":" in term:
-            prop, value = term.split(":")
-        else:
-            prop, value = None, term
-        # TODO: Custom search critiera
-        query = query.filter(or_(
-            Email.body.ilike("%" + value + "%"),
-            Email.subject.ilike("%" + value + "%")))
-    return query, search
+    terms = request.args.get("search")
+    if not terms:
+        return query.filter(Email.parent_id == None), None
+    def canonicalize(header):
+        return "-".join(h[0].upper() + h[1:] for h in header.split("-"))
+    def me_alias(header, q, v):
+        return (q.filter(cast(Email.headers[header], String).ilike(
+                "%" + current_user.email + "%"))
+            if current_user and v == "me" else
+            q.filter(Email.headers[header].ilike("%" + value + "%")))
+    return search(query, terms, [Email.body, Email.subject], {
+        "is": lambda q, v: q.filter({
+            "patch": Email.is_patch,
+            "request-pull": Email.is_request_pull,
+        }.get(v, False)),
+        "from": lambda q, v: me_alias("From", q, v),
+        "to": lambda q, v: me_alias("To", q, v),
+        "cc": lambda q, v: me_alias("Cc", q, v),
+        None: lambda q, p, v: query.filter(cast(
+            Email.headers[canonicalize(p)], String).ilike("%" + v + "%")),
+    }), terms
 
 @archives.route("/<owner_name>/<list_name>")
 def archive(owner_name, list_name):
@@ -66,7 +73,6 @@ def archive(owner_name, list_name):
         abort(401)
     threads = (Email.query
             .filter(Email.list_id == ml.id)
-            .filter(Email.parent_id == None)
         ).order_by(Email.updated.desc())
     threads, search = apply_search(threads)
     threads, pagination = paginate_query(threads)
